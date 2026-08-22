@@ -215,12 +215,9 @@ class UserAuthController extends Controller
         $driver = config('mail.default');
         Log::info('[SMTP] Sending via driver: ' . $driver . ' → to: ' . $email);
 
-        Mail::raw(
-            "Your Grow Capitals OTP is: {$otp}\n\nThis OTP is valid for 10 minutes. Do not share it with anyone.",
-            function ($message) use ($email) {
-                $message->to($email)->subject('Your Grow Capitals Login OTP');
-            }
-        );
+        Mail::send('emails.otp', ['otp' => $otp], function ($message) use ($email) {
+            $message->to($email)->subject('Your Grow Capital Login OTP');
+        });
 
         return [$driver, $smtpUsed];
     }

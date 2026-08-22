@@ -9,6 +9,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Mail;
 use App\Models\AppSetting;
 
 class EsignAgreementController extends Controller
@@ -34,11 +35,17 @@ class EsignAgreementController extends Controller
         // If it's already completely signed
         if ($agreement->is_signed || $agreement->status === 'signed') {
             Log::info('[E-SIGN] Agreement already signed', ['user_id' => $user->id]);
+            $kyc = \App\Models\KycVerification::where('user_id', $user->id)->where('status', 'approved')->latest()->first();
             return response()->json([
                 'status' => 'success',
                 'is_signed' => true,
                 'signed_at' => $agreement->signed_at,
-                'document_url' => url('/api/user/esign/download')
+                'document_url' => url('/api/user/esign/download'),
+                'kyc' => $kyc ? [
+                    'customer_name' => $kyc->customer_name,
+                    'customer_mobile' => $kyc->customer_mobile,
+                    'kyc_completed_at' => $kyc->kyc_completed_at ? $kyc->kyc_completed_at->format('Y-m-d H:i:s') : ($kyc->updated_at ? $kyc->updated_at->format('Y-m-d H:i:s') : null)
+                ] : null
             ]);
         }
 
@@ -78,11 +85,20 @@ class EsignAgreementController extends Controller
 
                                 Log::info('[E-SIGN] Final signed PDF saved', ['path' => $fileName]);
 
+                                // Send agreement emails to customer and admin
+                                self::sendSignedAgreementEmails($user, $agreement);
+
+                                $kyc = \App\Models\KycVerification::where('user_id', $user->id)->where('status', 'approved')->latest()->first();
                                 return response()->json([
                                     'status' => 'success',
                                     'is_signed' => true,
                                     'signed_at' => $agreement->signed_at,
-                                    'document_url' => url('/api/user/esign/download')
+                                    'document_url' => url('/api/user/esign/download'),
+                                    'kyc' => $kyc ? [
+                                        'customer_name' => $kyc->customer_name,
+                                        'customer_mobile' => $kyc->customer_mobile,
+                                        'kyc_completed_at' => $kyc->kyc_completed_at ? $kyc->kyc_completed_at->format('Y-m-d H:i:s') : ($kyc->updated_at ? $kyc->updated_at->format('Y-m-d H:i:s') : null)
+                                    ] : null
                                 ]);
                             }
                         }
@@ -283,6 +299,11 @@ class EsignAgreementController extends Controller
             ]);
         }
 
+        if (!$esignUrl) {
+            // Trigger emails for fallback/direct signed completion
+            self::sendSignedAgreementEmails($user, $agreement);
+        }
+
         if ($esignUrl) {
             return response()->json([
                 'status' => 'success',
@@ -347,5 +368,164 @@ class EsignAgreementController extends Controller
         return Storage::disk('local')->response($agreement->document_path, $filename, [
             'Content-Disposition' => "{$disposition}; filename=\"{$filename}\""
         ]);
+    }
+
+    /**
+     * Send signed agreement PDF to customer and admin.
+     */
+    public static function sendSignedAgreementEmails(\App\Models\User $user, \App\Models\EsignAgreement $agreement, string $type = 'automatic')
+    {
+        Log::info('[EMAIL] Initiating signed agreement emails', ['user_id' => $user->id, 'type' => $type]);
+
+        $smtpSettings = AppSetting::getGroup('smtp');
+        $fromAddress = 'noreply@growcapitals.com';
+        $fromName = 'Grow Capital Research';
+
+        if (!empty($smtpSettings) && !empty($smtpSettings['host'])) {
+            config([
+                'mail.default'                 => 'smtp',
+                'mail.mailers.smtp.host'       => $smtpSettings['host'],
+                'mail.mailers.smtp.port'       => $smtpSettings['port'] ?? 587,
+                'mail.mailers.smtp.username'   => $smtpSettings['username'] ?? '',
+                'mail.mailers.smtp.password'   => $smtpSettings['password'] ?? '',
+                'mail.mailers.smtp.encryption' => $smtpSettings['encryption'] ?? 'tls',
+                'mail.from.address'            => $smtpSettings['from_address'] ?? 'noreply@growcapitals.com',
+                'mail.from.name'               => $smtpSettings['from_name'] ?? 'Grow Capital Research',
+            ]);
+            $fromAddress = $smtpSettings['from_address'] ?? 'noreply@growcapitals.com';
+            $fromName = $smtpSettings['from_name'] ?? 'Grow Capital Research';
+            Log::info('[EMAIL] Dynamic SMTP configuration applied');
+        }
+
+        // Get the signed PDF content
+        $pdfContent = null;
+        $fileName = "grow_capital_agreement_{$user->id}.pdf";
+
+        if ($agreement->digio_document_id) {
+            $digio = AppSetting::getGroup('digio');
+            $clientId = $digio['client_id'] ?? null;
+            $clientSecret = $digio['client_secret'] ?? null;
+            $baseUrl = rtrim($digio['base_url'] ?? '', '/');
+
+            if ($clientId && $clientSecret && $baseUrl) {
+                $downloadUrl = "{$baseUrl}/v2/client/document/download?document_id={$agreement->digio_document_id}";
+                try {
+                    $pdfRes = Http::withBasicAuth($clientId, $clientSecret)->get($downloadUrl);
+                    if ($pdfRes->successful()) {
+                        $pdfContent = $pdfRes->body();
+                    }
+                } catch (\Exception $e) {
+                    Log::error('[EMAIL] Failed to fetch signed PDF from Digio: ' . $e->getMessage());
+                }
+            }
+        }
+
+        if (!$pdfContent && $agreement->document_path && Storage::disk('local')->exists($agreement->document_path)) {
+            $pdfContent = Storage::disk('local')->get($agreement->document_path);
+        }
+
+        if (!$pdfContent) {
+            Log::error('[EMAIL] Signed PDF content not found. Email send aborted.');
+            return;
+        }
+
+        // Clean customer name for greeting
+        $customerName = ($user->kyc && $user->kyc->customer_name) ? $user->kyc->customer_name : $user->name;
+        $executionDate = $agreement->signed_at ? $agreement->signed_at->format('d-m-Y H:i:s') : now()->format('d-m-Y H:i:s');
+
+        $customerSent = false;
+        $customerError = null;
+
+        // 1. Send copy to customer
+        try {
+            $customerMailData = [
+                'customer_name' => $customerName,
+                'email'         => $user->email,
+                'date'          => $executionDate,
+            ];
+
+            // A. Send agreement PDF email
+            Mail::send('emails.agreement_customer', $customerMailData, function ($message) use ($user, $pdfContent, $fileName, $fromAddress, $fromName) {
+                $message->to($user->email)
+                    ->from($fromAddress, $fromName)
+                    ->subject('Your Executed Service Agreement - Grow Capital Research')
+                    ->attachData($pdfContent, $fileName, [
+                        'mime' => 'application/pdf',
+                    ]);
+            });
+            Log::info('[EMAIL] Agreement email sent to customer: ' . $user->email);
+
+            // B. Compile Terms & Conditions PDF dynamically
+            $termsHtml = view('pdf.terms', [
+                'customer_name' => $customerName,
+                'date'          => $executionDate,
+            ])->render();
+            $termsPdf = Pdf::loadHTML($termsHtml)->output();
+
+            // C. Send welcome onboarding email
+            Mail::send('emails.welcome', ['customer_name' => $customerName], function ($message) use ($user, $termsPdf, $fromAddress, $fromName) {
+                $message->to($user->email)
+                    ->from($fromAddress, $fromName)
+                    ->subject('Welcome to Grow Capital Research - Subscription Activated')
+                    ->attachData($termsPdf, 'grow_capital_terms_and_conditions.pdf', [
+                        'mime' => 'application/pdf',
+                    ]);
+            });
+            Log::info('[EMAIL] Welcome onboarding email with terms PDF sent to customer: ' . $user->email);
+
+            $customerSent = true;
+        } catch (\Exception $e) {
+            $customerError = $e->getMessage();
+            Log::error('[EMAIL] Failed to send customer emails: ' . $customerError);
+        }
+
+        // 2. Send copy to admin configured email address
+        $adminEmail = $fromAddress; // Fallback to SMTP from address
+        // Check if there is an admin user we can copy
+        $adminUser = \App\Models\User::where('role', 'admin')->first();
+        if ($adminUser && !empty($adminUser->email)) {
+            $adminEmail = $adminUser->email;
+        }
+
+        $adminSent = false;
+        $adminError = null;
+
+        try {
+            $adminMailData = [
+                'user_id'       => $user->id,
+                'customer_name' => $customerName,
+                'email'         => $user->email,
+                'mobile'        => $user->phone ?? $user->mobile,
+                'date'          => $executionDate,
+            ];
+
+            Mail::send('emails.agreement_admin', $adminMailData, function ($message) use ($adminEmail, $pdfContent, $fileName, $customerName, $user, $fromAddress, $fromName) {
+                $message->to($adminEmail)
+                    ->from($fromAddress, $fromName)
+                    ->subject("New Executed Agreement: {$customerName} (#{$user->id})")
+                    ->attachData($pdfContent, $fileName, [
+                        'mime' => 'application/pdf',
+                    ]);
+            });
+            $adminSent = true;
+            Log::info('[EMAIL] Agreement email sent to admin: ' . $adminEmail);
+        } catch (\Exception $e) {
+            $adminError = $e->getMessage();
+            Log::error('[EMAIL] Failed to send email to admin: ' . $adminError);
+        }
+
+        // Record log to DB
+        $logs = $agreement->email_logs ?? [];
+        $logs[] = [
+            'type'            => $type,
+            'sent_at'         => now()->toIso8601String(),
+            'customer_email'  => $user->email,
+            'customer_status' => $customerSent ? 'success' : 'failed',
+            'customer_error'  => $customerError,
+            'admin_email'     => $adminEmail,
+            'admin_status'    => $adminSent ? 'success' : 'failed',
+            'admin_error'     => $adminError,
+        ];
+        $agreement->update(['email_logs' => $logs]);
     }
 }

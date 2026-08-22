@@ -15,10 +15,12 @@ class EsignAgreement extends Model
         'esign_url',
         'status',
         'is_signed',
+        'email_logs',
     ];
 
     protected $casts = [
         'signed_at' => 'datetime',
+        'email_logs' => 'array',
     ];
 
     public function user()

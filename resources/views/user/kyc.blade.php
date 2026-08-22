@@ -10,23 +10,23 @@
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         :root {
-            --primary: #6C63FF; --primary-dark: #574fd6; --accent: #00D4AA;
-            --amber: #f59e0b; --bg: #080b15; --surface: #0d1020;
-            --card: rgba(255,255,255,0.04); --border: rgba(255,255,255,0.08);
-            --text: #e8eaf6; --text-muted: #8890a6; --red: #ef4444; --green: #10b981;
+            --primary: #004b87; --primary-dark: #003d7c; --accent: #98d102;
+            --amber: #f59e0b; --bg: #f8fafc; --surface: #ffffff;
+            --card: #ffffff; --border: #e2e8f0;
+            --text: #0f172a; --text-muted: #64748b; --red: #ef4444; --green: #10b981;
         }
         body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
 
         /* HEADER */
-        .header { background: rgba(13,16,32,0.97); backdrop-filter: blur(16px); border-bottom: 1px solid var(--border); height: 68px; display: flex; align-items: center; justify-content: space-between; padding: 0 32px; position: sticky; top: 0; z-index: 100; }
+        .header { background: rgba(255,255,255,0.97); backdrop-filter: blur(16px); border-bottom: 1px solid var(--border); height: 68px; display: flex; align-items: center; justify-content: space-between; padding: 0 32px; position: sticky; top: 0; z-index: 100; }
         .header-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
-        .header-logo-icon { width: 38px; height: 38px; background: linear-gradient(135deg, var(--primary), var(--accent)); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+        .header-logo-icon { width: 38px; height: 38px; background: #ffffff; border: 1px solid var(--border); border-radius: 10px; display: flex; align-items: center; justify-content: center; padding: 2px; overflow: hidden; }
         .header-logo-text { font-size: 17px; font-weight: 700; background: linear-gradient(135deg, var(--primary), var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
         .nav-link { padding: 8px 14px; border-radius: 10px; font-size: 14px; color: var(--text-muted); text-decoration: none; transition: all 0.2s; font-weight: 500; }
         .nav-link:hover { color: var(--text); background: var(--card); }
-        .nav-link.active { color: var(--primary); background: rgba(108,99,255,0.1); }
+        .nav-link.active { color: var(--primary); background: rgba(0,75,135,0.1); }
         .back-btn { display: flex; align-items: center; gap: 8px; padding: 8px 16px; background: var(--card); border: 1px solid var(--border); border-radius: 10px; color: var(--text-muted); text-decoration: none; font-size: 13px; font-weight: 500; transition: all 0.2s; }
-        .back-btn:hover { color: var(--text); border-color: rgba(108,99,255,0.3); }
+        .back-btn:hover { color: var(--text); border-color: rgba(0,75,135,0.3); }
 
         /* MAIN */
         .main { flex: 1; padding: 40px 32px; max-width: 960px; margin: 0 auto; width: 100%; }
@@ -42,7 +42,7 @@
         /* STATUS CARDS */
         .status-card { border-radius: 24px; padding: 36px; margin-bottom: 28px; text-align: center; }
         .status-card.not-started { background: linear-gradient(135deg, rgba(245,158,11,0.08), rgba(239,68,68,0.05)); border: 1px solid rgba(245,158,11,0.2); }
-        .status-card.pending     { background: linear-gradient(135deg, rgba(108,99,255,0.08), rgba(0,212,170,0.04)); border: 1px solid rgba(108,99,255,0.2); }
+        .status-card.pending     { background: linear-gradient(135deg, rgba(0,75,135,0.08), rgba(152,209,2,0.04)); border: 1px solid rgba(0,75,135,0.2); }
         .status-card.approved    { background: linear-gradient(135deg, rgba(16,185,129,0.10), rgba(0,212,170,0.05)); border: 1px solid rgba(16,185,129,0.25); }
         .status-card.failed      { background: linear-gradient(135deg, rgba(239,68,68,0.08), rgba(245,158,11,0.05)); border: 1px solid rgba(239,68,68,0.2); }
 
@@ -61,8 +61,8 @@
         .steps-section h3 { font-size: 16px; font-weight: 700; margin-bottom: 20px; }
         .steps-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
         .step-card { background: var(--card); border: 1px solid var(--border); border-radius: 18px; padding: 22px 18px; text-align: center; transition: all 0.2s; }
-        .step-card:hover { border-color: rgba(108,99,255,0.3); transform: translateY(-2px); }
-        .step-num { width: 32px; height: 32px; border-radius: 50%; background: rgba(108,99,255,0.15); border: 1px solid rgba(108,99,255,0.3); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: var(--primary); margin: 0 auto 12px; }
+        .step-card:hover { border-color: rgba(0,75,135,0.3); transform: translateY(-2px); }
+        .step-num { width: 32px; height: 32px; border-radius: 50%; background: rgba(0,75,135,0.15); border: 1px solid rgba(0,75,135,0.3); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: var(--primary); margin: 0 auto 12px; }
         .step-icon { font-size: 28px; margin-bottom: 10px; }
         .step-title { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
         .step-desc  { font-size: 11px; color: var(--text-muted); line-height: 1.5; }
@@ -75,20 +75,20 @@
         .form-group { display: flex; flex-direction: column; gap: 7px; }
         .form-group label { font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
         .form-group input { padding: 13px 16px; background: rgba(255,255,255,0.06); border: 1px solid var(--border); border-radius: 12px; color: var(--text); font-size: 14px; font-family: 'Inter', sans-serif; outline: none; transition: all 0.2s; }
-        .form-group input:focus { border-color: var(--primary); background: rgba(108,99,255,0.08); box-shadow: 0 0 0 3px rgba(108,99,255,0.12); }
+        .form-group input:focus { border-color: var(--primary); background: rgba(0,75,135,0.08); box-shadow: 0 0 0 3px rgba(0,75,135,0.12); }
         .form-group input::placeholder { color: var(--text-muted); }
-        .consent-box { background: rgba(108,99,255,0.06); border: 1px solid rgba(108,99,255,0.15); border-radius: 12px; padding: 14px 16px; font-size: 12px; color: var(--text-muted); line-height: 1.6; margin-bottom: 24px; display: flex; gap: 10px; }
+        .consent-box { background: rgba(0,75,135,0.06); border: 1px solid rgba(0,75,135,0.15); border-radius: 12px; padding: 14px 16px; font-size: 12px; color: var(--text-muted); line-height: 1.6; margin-bottom: 24px; display: flex; gap: 10px; }
         .submit-btn { width: 100%; padding: 15px; background: linear-gradient(135deg, var(--amber), #d97706); color: #000; font-size: 15px; font-weight: 700; font-family: 'Inter', sans-serif; border: none; border-radius: 14px; cursor: pointer; transition: all 0.25s; display: flex; align-items: center; justify-content: center; gap: 10px; }
         .submit-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(245,158,11,0.4); }
         .submit-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
-        .submit-btn.loading { background: linear-gradient(135deg, rgba(108,99,255,0.5), rgba(87,79,214,0.5)); color: #fff; }
+        .submit-btn.loading { background: linear-gradient(135deg, rgba(0,75,135,0.5), rgba(0,61,124,0.5)); color: #fff; }
 
         /* TOAST */
         .toast { position: fixed; bottom: 28px; right: 28px; padding: 14px 20px; border-radius: 12px; font-size: 14px; font-weight: 500; z-index: 9999; display: none; align-items: center; gap: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.5); animation: toastIn 0.3s ease; }
         @keyframes toastIn { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         .toast-success { background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.3); color: #34d399; display: flex; }
         .toast-error   { background: rgba(239,68,68,0.15);  border: 1px solid rgba(239,68,68,0.3);  color: #f87171; display: flex; }
-        .toast-info    { background: rgba(108,99,255,0.15); border: 1px solid rgba(108,99,255,0.3); color: #a5b4fc; display: flex; }
+        .toast-info    { background: rgba(0,75,135,0.15); border: 1px solid rgba(0,75,135,0.3); color: #93c5fd; display: flex; }
 
         /* REDIRECT MODAL */
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(8px); z-index: 1000; display: none; align-items: center; justify-content: center; }
@@ -101,7 +101,7 @@
         .modal-btn-row { display: flex; gap: 12px; }
         .modal-btn { flex: 1; padding: 13px; border-radius: 12px; font-size: 14px; font-weight: 600; font-family: 'Inter', sans-serif; cursor: pointer; border: none; transition: all 0.2s; }
         .modal-btn.primary { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: #fff; }
-        .modal-btn.primary:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(108,99,255,0.4); }
+        .modal-btn.primary:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(0,75,135,0.4); }
         .modal-btn.secondary { background: var(--card); border: 1px solid var(--border); color: var(--text-muted); }
         .modal-btn.secondary:hover { color: var(--text); }
 
@@ -115,15 +115,10 @@
 
 <!-- HEADER -->
 <header class="header">
-    <a href="/dashboard" class="header-logo">
-        <div class="header-logo-icon">📈</div>
-        <span class="header-logo-text">Grow Capitals</span>
+    <a href="/dashboard" class="header-logo" style="display: flex; align-items: center; height: 38px;">
+        <img src="{{ asset('grologo.png') }}" alt="Grow Capital Research" style="height: 38px; width: auto; object-fit: contain;" />
     </a>
-    <nav style="display:flex;align-items:center;gap:8px;">
-        <a href="/dashboard" class="nav-link">Dashboard</a>
-        <a href="/kyc" class="nav-link active">KYC</a>
-    </nav>
-    <a href="/dashboard" class="back-btn">← Back to Dashboard</a>
+    <button id="kycLogoutBtn" class="back-btn" style="cursor: pointer; background: transparent; border: 1px solid var(--border); font-family: inherit;">⏻ Logout</button>
 </header>
 
 <!-- MAIN -->
@@ -259,42 +254,8 @@
         const pending  = ['initiated', 'pending', 'approval_pending'];
 
         if (status === 'approved') {
-            // ── APPROVED
-            section.innerHTML = `
-                <div class="status-card approved">
-                    <div class="status-big-icon">✅</div>
-                    <h2>KYC Verified Successfully!</h2>
-                    <p>Your identity has been verified. You now have full access to all Grow Capitals Research features.</p>
-                    <div class="kyc-detail-grid">
-                        <div class="kyc-detail-item">
-                            <div class="label">Customer Name</div>
-                            <div class="value">${kyc?.customer_name || userInfo.name || '—'}</div>
-                        </div>
-                        <div class="kyc-detail-item">
-                            <div class="label">Mobile</div>
-                            <div class="value">${kyc?.customer_mobile || '—'}</div>
-                        </div>
-                        <div class="kyc-detail-item">
-                            <div class="label">Verified On</div>
-                            <div class="value">${kyc?.kyc_completed_at ? new Date(kyc.kyc_completed_at).toLocaleDateString('en-IN') : '—'}</div>
-                        </div>
-                        <div class="kyc-detail-item">
-                            <div class="label">Status</div>
-                            <div class="value" style="color: #34d399;">✅ Approved</div>
-                        </div>
-                        <div class="kyc-detail-item">
-                            <div class="label">Document ID</div>
-                            <div class="value" style="font-size:12px; word-break:break-all;">${kyc?.id || '—'}</div>
-                        </div>
-                        <div class="kyc-detail-item">
-                            <div class="label">Expires</div>
-                            <div class="value">${kyc?.kyc_expires_at ? new Date(kyc.kyc_expires_at).toLocaleDateString('en-IN') : 'No expiry'}</div>
-                        </div>
-                    </div>
-                </div>`;
-            stepsEl.style.display = 'none';
-            formEl.style.display  = 'none';
-
+            window.location.href = '/dashboard';
+            return;
         } else if (pending.includes(status)) {
             // ── PENDING
             const labels = { initiated: ['⏳ KYC In Progress', 'Your KYC request has been created. Please open the Digio link to complete verification.'], pending: ['⏳ KYC Under Review', 'Your KYC is submitted and under review. This usually takes a few minutes.'], approval_pending: ['⏳ Awaiting Approval', 'Your documents have been verified. Final approval is in progress.'] };
@@ -306,7 +267,7 @@
                     <h2>${title}</h2>
                     <p>${desc}</p>
                     <div style="display:flex; justify-content:center; gap:12px; margin-top:20px;">
-                        <button onclick="syncKycStatus()" style="padding: 11px 24px; background: rgba(108,99,255,0.15); border: 1px solid rgba(108,99,255,0.3); border-radius: 12px; color: #a5b4fc; font-size: 13px; font-weight: 600; cursor: pointer; font-family: 'Inter', sans-serif;" id="syncBtn">
+                        <button onclick="syncKycStatus()" style="padding: 11px 24px; background: rgba(0,75,135,0.15); border: 1px solid rgba(0,75,135,0.3); border-radius: 12px; color: #93c5fd; font-size: 13px; font-weight: 600; cursor: pointer; font-family: 'Inter', sans-serif;" id="syncBtn">
                             ↻ Refresh Status
                         </button>
                         <button onclick="restartKyc()" style="padding: 11px 24px; background: rgba(245,158,11,0.15); border: 1px solid rgba(245,158,11,0.3); border-radius: 12px; color: #fbbf24; font-size: 13px; font-weight: 600; cursor: pointer; font-family: 'Inter', sans-serif;" title="Start a fresh KYC application if you are stuck">
@@ -400,9 +361,7 @@
             const data = await res.json();
 
             if (data.success) {
-                digioRedirectUrl = data.redirect_url;
-                document.getElementById('modalUrl').textContent = data.redirect_url;
-                document.getElementById('redirectModal').classList.add('open');
+                window.location.href = data.redirect_url;
             } else {
                 showToast(data.message || 'Failed to initiate KYC.', 'error');
                 btn.disabled = false;
@@ -445,6 +404,18 @@
     if (urlParams.get('kyc') === 'success') showToast('✅ KYC verified successfully!', 'success');
     if (urlParams.get('kyc') === 'pending')  showToast('⏳ KYC submitted and under review.', 'info');
     if (urlParams.get('kyc') === 'failed')   showToast('❌ KYC verification failed. Please retry.', 'error');
+
+    document.getElementById('kycLogoutBtn').addEventListener('click', async () => {
+        try {
+            await fetch('/api/user/logout', {
+                method: 'POST',
+                headers: { 'Authorization': 'Bearer ' + userToken, 'Accept': 'application/json' }
+            });
+        } catch (e) {}
+        localStorage.removeItem('user_token');
+        localStorage.removeItem('user_info');
+        window.location.href = '/login';
+    });
 
     // INIT
     loadKycStatus();

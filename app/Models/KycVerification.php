@@ -24,16 +24,21 @@ class KycVerification extends Model
         'kyc_completed_at',
         'kyc_expires_at',
         'raw_response',
+        'declaration_accepted',
+        'declaration_accepted_at',
+        'declaration_text',
         'callback_status',
         'callback_message',
     ];
 
     protected $casts = [
-        'kyc_details'      => 'array',
-        'aadhaar_details'  => 'array',
-        'raw_response'     => 'array',
-        'kyc_completed_at' => 'datetime',
-        'kyc_expires_at'   => 'datetime',
+        'kyc_details'             => 'array',
+        'aadhaar_details'         => 'array',
+        'raw_response'            => 'array',
+        'kyc_completed_at'        => 'datetime',
+        'kyc_expires_at'          => 'datetime',
+        'declaration_accepted'    => 'boolean',
+        'declaration_accepted_at' => 'datetime',
     ];
 
     // ─── Relationships ────────────────────────────────────────────

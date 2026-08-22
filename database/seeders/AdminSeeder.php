@@ -21,6 +21,11 @@ class AdminSeeder extends Seeder
             ]
         );
 
+        \App\Models\AppSetting::updateOrCreate(
+            ['group' => 'kyc', 'key' => 'declaration'],
+            ['value' => 'I hereby authorize Grow Capital Research to retrieve my profile and verify my identity details via Digio secure KYC gateway. I confirm that the Aadhaar and PAN details provided belong to me and are correct.']
+        );
+
         $this->command->info('✅ Admin user seeded: admin@example.com / 11111111');
     }
 }

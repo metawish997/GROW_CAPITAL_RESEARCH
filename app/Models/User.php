@@ -24,6 +24,17 @@ class User extends Authenticatable
         'role',
         'otp',
         'otp_expires_at',
+        'phone',
+        'address',
+        'city',
+        'state',
+        'pincode',
+        'dob',
+        'gender',
+        'marital_status',
+        'pan_card',
+        'pan_card_name',
+        'father_name',
     ];
 
     /**
@@ -44,13 +55,22 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'otp_expires_at'    => 'datetime',
             'password'          => 'hashed',
+            'dob'               => 'date',
         ];
     }
 
     /**
-     * Check if user is admin.
+     * Check if user is admin or staff.
      */
     public function isAdmin(): bool
+    {
+        return in_array($this->role, ['admin', 'staff']);
+    }
+
+    /**
+     * Check if user is super admin.
+     */
+    public function isSuperAdmin(): bool
     {
         return $this->role === 'admin';
     }

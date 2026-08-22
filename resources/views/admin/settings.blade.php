@@ -1,191 +1,12 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>API Settings - Admin | Grow Capitals</title>
-    <meta name="description" content="Manage SMTP, SMS, Digio, and Razorpay API credentials from the Admin panel." />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-    <style>
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+@extends('layouts.admin')
 
-        :root {
-            --primary: #6C63FF;
-            --amber: #f59e0b;
-            --green: #10b981;
-            --red: #ef4444;
-            --bg: #080a12;
-            --sidebar-bg: #0d0f1c;
-            --card: rgba(255,255,255,0.04);
-            --card-hover: rgba(255,255,255,0.06);
-            --border: rgba(255,255,255,0.08);
-            --text: #e8eaf6;
-            --text-muted: #8890a6;
-        }
+@section('title', 'API Settings')
+@section('header_title', 'API Settings')
+@section('header_actions')
+    <span class="header-badge" style="padding: 5px 12px; background: rgba(0,75,135,0.12); border: 1px solid rgba(0,75,135,0.25); border-radius: 20px; font-size: 12px; color: var(--primary); font-weight: 500;">🔒 Secure DB Storage</span>
+@endsection
 
-        body {
-            font-family: 'Inter', sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            min-height: 100vh;
-            display: flex;
-        }
-
-        /* --- SIDEBAR --- */
-        .sidebar {
-            width: 260px;
-            min-height: 100vh;
-            background: var(--sidebar-bg);
-            border-right: 1px solid var(--border);
-            display: flex;
-            flex-direction: column;
-            position: fixed;
-            top: 0;
-            left: 0;
-            bottom: 0;
-            z-index: 100;
-        }
-
-        .sidebar-logo {
-            padding: 24px 20px;
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .sidebar-logo-icon {
-            width: 40px;
-            height: 40px;
-            background: linear-gradient(135deg, var(--primary), #00D4AA);
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-        }
-
-        .sidebar-logo-text h3 { font-size: 16px; font-weight: 700; }
-        .sidebar-logo-text span { font-size: 11px; color: var(--text-muted); }
-
-        .sidebar-nav { flex: 1; padding: 16px 12px; }
-
-        .nav-section-label {
-            font-size: 10px;
-            font-weight: 600;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            color: var(--text-muted);
-            padding: 12px 10px 6px;
-        }
-
-        .nav-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 10px 12px;
-            border-radius: 10px;
-            margin-bottom: 2px;
-            cursor: pointer;
-            transition: all 0.2s;
-            text-decoration: none;
-            color: var(--text-muted);
-            font-size: 14px;
-        }
-
-        .nav-item:hover { background: var(--card); color: var(--text); }
-        .nav-item.active { background: rgba(108,99,255,0.15); color: var(--primary); font-weight: 600; }
-
-        .nav-item .icon { font-size: 18px; width: 22px; text-align: center; }
-
-        .sidebar-footer {
-            padding: 16px 12px;
-            border-top: 1px solid var(--border);
-        }
-
-        .admin-user-badge {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 10px 12px;
-            background: var(--card);
-            border-radius: 12px;
-        }
-
-        .admin-avatar {
-            width: 34px;
-            height: 34px;
-            background: linear-gradient(135deg, var(--amber), var(--primary));
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 16px;
-            font-weight: 600;
-            color: #000;
-        }
-
-        .admin-info { flex: 1; }
-        .admin-info .name { font-size: 13px; font-weight: 600; }
-        .admin-info .role { font-size: 11px; color: var(--amber); }
-
-        .logout-btn {
-            background: none;
-            border: none;
-            color: var(--text-muted);
-            cursor: pointer;
-            font-size: 18px;
-            padding: 4px;
-            transition: color 0.2s;
-        }
-        .logout-btn:hover { color: var(--red); }
-
-        /* --- MAIN CONTENT --- */
-        .main {
-            margin-left: 260px;
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-        }
-
-        /* --- HEADER --- */
-        .header {
-            height: 64px;
-            background: rgba(8,10,18,0.95);
-            backdrop-filter: blur(12px);
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 32px;
-            position: sticky;
-            top: 0;
-            z-index: 50;
-        }
-
-        .header-left h2 { font-size: 18px; font-weight: 600; }
-        .header-left p  { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
-
-        .header-right { display: flex; align-items: center; gap: 12px; }
-
-        .header-badge {
-            padding: 5px 12px;
-            background: rgba(108,99,255,0.12);
-            border: 1px solid rgba(108,99,255,0.25);
-            border-radius: 20px;
-            font-size: 12px;
-            color: var(--primary);
-            font-weight: 500;
-        }
-
-        /* --- PAGE CONTENT --- */
-        .content { padding: 32px; }
-
-        .page-header { margin-bottom: 28px; }
-        .page-header h1 { font-size: 24px; font-weight: 700; }
-        .page-header p  { font-size: 14px; color: var(--text-muted); margin-top: 6px; }
-
+@section('styles')
         /* --- TABS --- */
         .tabs {
             display: flex;
@@ -206,7 +27,7 @@
             color: var(--text-muted);
             font-size: 13px;
             font-weight: 500;
-            font-family: 'Inter', sans-serif;
+            font-family: inherit;
             cursor: pointer;
             transition: all 0.2s;
             display: flex;
@@ -260,7 +81,7 @@
         .panel-icon.digio    { background: rgba(59,130,246,0.15); }
         .panel-icon.razorpay { background: rgba(245,158,11,0.15); }
 
-        .panel-title-text h3 { font-size: 18px; font-weight: 600; }
+        .panel-title-text h3 { font-size: 18px; font-weight: 600; color: var(--text-dark); }
         .panel-title-text p  { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
 
         .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
@@ -277,25 +98,25 @@
         }
 
         .form-group input,
-        .form-group select {
+        .form-group select,
+        .form-group textarea {
             padding: 12px 14px;
-            background: rgba(255,255,255,0.06);
+            background: #ffffff;
             border: 1px solid var(--border);
             border-radius: 10px;
             color: var(--text);
             font-size: 14px;
-            font-family: 'Inter', sans-serif;
+            font-family: inherit;
             outline: none;
             transition: all 0.2s;
         }
 
-        .form-group select option { background: #1a1d2e; }
+        .form-group select option { background: #ffffff; color: var(--text-dark); }
 
         .form-group input:focus,
         .form-group select:focus {
             border-color: var(--primary);
-            background: rgba(108,99,255,0.08);
-            box-shadow: 0 0 0 3px rgba(108,99,255,0.12);
+            box-shadow: 0 0 0 3px rgba(0,75,135,0.08);
         }
 
         .form-group input::placeholder { color: var(--text-muted); }
@@ -303,13 +124,13 @@
         .btn-save {
             margin-top: 24px;
             padding: 13px 32px;
-            background: linear-gradient(135deg, var(--primary), #574fd6);
+            background: var(--primary);
             color: #fff;
             border: none;
             border-radius: 12px;
             font-size: 14px;
             font-weight: 600;
-            font-family: 'Inter', sans-serif;
+            font-family: inherit;
             cursor: pointer;
             transition: all 0.25s;
             display: inline-flex;
@@ -317,7 +138,7 @@
             gap: 8px;
         }
 
-        .btn-save:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(108,99,255,0.4); }
+        .btn-save:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(0,75,135,0.25); }
         .btn-save:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
 
         .toast {
@@ -332,14 +153,14 @@
             align-items: center;
             gap: 10px;
             z-index: 9999;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
             animation: slideUp 0.3s ease;
         }
 
         @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
-        .toast-success { background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.3); color: #34d399; display: flex; }
-        .toast-error   { background: rgba(239,68,68,0.15);  border: 1px solid rgba(239,68,68,0.3);  color: #f87171; display: flex; }
+        .toast-success { background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.25); color: var(--green); display: flex; }
+        .toast-error   { background: rgba(239,68,68,0.1);  border: 1px solid rgba(239,68,68,0.2);  color: var(--red); display: flex; }
 
         .divider { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
 
@@ -347,8 +168,8 @@
             display: flex;
             gap: 10px;
             padding: 12px 16px;
-            background: rgba(108,99,255,0.08);
-            border: 1px solid rgba(108,99,255,0.2);
+            background: rgba(0,75,135,0.06);
+            border: 1px solid rgba(0,75,135,0.15);
             border-radius: 10px;
             font-size: 12px;
             color: var(--text-muted);
@@ -384,83 +205,48 @@
         }
 
         .eye-btn:hover { color: var(--primary); }
-
         .eye-btn svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-    </style>
-</head>
-<body>
 
-<!-- SIDEBAR -->
-<aside class="sidebar">
-    <div class="sidebar-logo">
-        <div class="sidebar-logo-icon">📈</div>
-        <div class="sidebar-logo-text">
-            <h3>Grow Capitals</h3>
-            <span>Admin Panel</span>
-        </div>
-    </div>
+        @media (max-width: 768px) {
+            .tabs { width: 100%; overflow-x: auto; flex-wrap: nowrap; -webkit-overflow-scrolling: touch; border-radius: 12px; padding: 8px; margin-bottom: 20px; }
+            .tabs::-webkit-scrollbar { display: none; }
+            .tab-btn { flex-shrink: 0; padding: 6px 12px; font-size: 11px; }
+            .panel-card { padding: 16px; border-radius: 16px; }
+            .form-grid { grid-template-columns: 1fr; gap: 12px; }
+            .panel-title { gap: 10px; margin-bottom: 16px; }
+            .panel-title-text h3 { font-size: 15px; }
+            .panel-title-text p { font-size: 11px; line-height: 1.4; }
+            .panel-icon { width: 36px; height: 36px; font-size: 18px; }
+            .panel-icon svg { width: 18px; height: 18px; }
+            .form-group label { font-size: 10px; }
+            .form-group input, .form-group select, .form-group textarea { font-size: 12px; padding: 10px 12px; }
+            .info-note { font-size: 11px; padding: 10px 12px; }
+            .btn-save { width: 100%; justify-content: center; margin-top: 16px; font-size: 13px; padding: 10px 20px; }
+        }
+@endsection
 
-    <nav class="sidebar-nav">
-        <div class="nav-section-label">Main</div>
-        <a href="/admin/dashboard" class="nav-item">
-            <span class="icon">🏠</span> Dashboard
-        </a>
-        <a href="/admin/users" class="nav-item">
-            <span class="icon">👥</span> Users
-        </a>
-
-        <div class="nav-section-label">Configuration</div>
-        <a href="/admin/settings" class="nav-item active">
-            <span class="icon">⚙️</span> API Settings
-        </a>
-    </nav>
-
-    <div class="sidebar-footer">
-        <div class="admin-user-badge">
-            <div class="admin-avatar" id="sidebarAvatar">A</div>
-            <div class="admin-info">
-                <div class="name" id="sidebarName">Admin</div>
-                <div class="role">Super Admin</div>
-            </div>
-            <button class="logout-btn" id="sidebarLogout" title="Logout">⏻</button>
-        </div>
-    </div>
-</aside>
-
-<!-- MAIN CONTENT -->
-<div class="main">
-
-    <!-- HEADER -->
-    <header class="header">
-        <div class="header-left">
-            <h2>API Settings</h2>
-            <p>Manage integration credentials stored in database</p>
-        </div>
-        <div class="header-right">
-            <span class="header-badge">🔒 Secure DB Storage</span>
-        </div>
-    </header>
-
-    <!-- CONTENT -->
-    <div class="content">
-        <div class="page-header">
-            <h1>Integration Settings</h1>
-            <p>All credentials are encrypted and stored in the database — not in environment files.</p>
-        </div>
-
+@section('content')
         <!-- TABS -->
         <div class="tabs" role="tablist">
             <button class="tab-btn active" id="tab-smtp" onclick="switchTab('smtp')" role="tab">
-                <span class="status-dot" id="dot-smtp"></span> 📧 SMTP
-            </button>
-            <button class="tab-btn" id="tab-sms" onclick="switchTab('sms')" role="tab">
-                <span class="status-dot" id="dot-sms"></span> 📱 SMS Panel
+                <span class="status-dot" id="dot-smtp"></span>
+                <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle;"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                SMTP
             </button>
             <button class="tab-btn" id="tab-digio" onclick="switchTab('digio')" role="tab">
-                <span class="status-dot" id="dot-digio"></span> 📝 Digio
+                <span class="status-dot" id="dot-digio"></span>
+                <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                Digio
             </button>
-            <button class="tab-btn" id="tab-razorpay" onclick="switchTab('razorpay')" role="tab">
-                <span class="status-dot" id="dot-razorpay"></span> 💳 Razorpay
+            <button class="tab-btn" id="tab-kra" onclick="switchTab('kra')" role="tab">
+                <span class="status-dot" id="dot-kra"></span>
+                <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle;"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line></svg>
+                KRA Settings
+            </button>
+            <button class="tab-btn" id="tab-kyc" onclick="switchTab('kyc')" role="tab">
+                <span class="status-dot" id="dot-kyc"></span>
+                <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle;"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                Declaration Text
             </button>
         </div>
 
@@ -468,7 +254,9 @@
         <div id="panel-smtp" class="settings-panel active">
             <div class="panel-card">
                 <div class="panel-title">
-                    <div class="panel-icon smtp">📧</div>
+                    <div class="panel-icon smtp">
+                        <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="color: #6c63ff;"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                    </div>
                     <div class="panel-title-text">
                         <h3>SMTP Email Configuration</h3>
                         <p>Used to send OTP emails, transactional notifications, and alerts.</p>
@@ -515,56 +303,20 @@
                             <input type="text" name="from_name" id="smtp-from_name" placeholder="Grow Capitals Research" />
                         </div>
                     </div>
-                    <button type="submit" class="btn-save" id="save-smtp">💾 Save SMTP Settings</button>
+                    <button type="submit" class="btn-save" id="save-smtp"><svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle;"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg> Save SMTP Settings</button>
                 </form>
             </div>
         </div>
 
-        <!-- SMS PANEL -->
-        <div id="panel-sms" class="settings-panel">
-            <div class="panel-card">
-                <div class="panel-title">
-                    <div class="panel-icon sms">📱</div>
-                    <div class="panel-title-text">
-                        <h3>SMS Panel Configuration</h3>
-                        <p>Configure your SMS provider for OTP messages and notifications.</p>
-                    </div>
-                </div>
-                <div class="info-note">ℹ️ Supports any SMS provider (Fast2SMS, TextLocal, MSG91, Twilio, etc.).</div>
-                <form id="form-sms" onsubmit="saveSettings(event, 'sms')">
-                    <div class="form-grid">
-                        <div class="form-group full">
-                            <label>Provider Name</label>
-                            <input type="text" name="provider" id="sms-provider" placeholder="e.g. Fast2SMS, MSG91, Twilio" />
-                        </div>
-                        <div class="form-group full">
-                            <label>API Key</label>
-                            <div class="pw-wrap">
-                                <input type="password" name="api_key" id="sms-api_key" placeholder="••••••••••••••••" />
-                                <button type="button" class="eye-btn" onclick="togglePw('sms-api_key', this)" title="Show/Hide">
-                                    <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                                </button>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label>Sender ID / DLT ID</label>
-                            <input type="text" name="sender_id" id="sms-sender_id" placeholder="GRWCAP" />
-                        </div>
-                        <div class="form-group">
-                            <label>Base URL (API Endpoint)</label>
-                            <input type="url" name="base_url" id="sms-base_url" placeholder="https://api.provider.com/v1/send" />
-                        </div>
-                    </div>
-                    <button type="submit" class="btn-save" id="save-sms">💾 Save SMS Settings</button>
-                </form>
-            </div>
-        </div>
+
 
         <!-- DIGIO PANEL -->
         <div id="panel-digio" class="settings-panel">
             <div class="panel-card">
                 <div class="panel-title">
-                    <div class="panel-icon digio">📝</div>
+                    <div class="panel-icon digio">
+                        <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="color: #3b82f6;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                    </div>
                     <div class="panel-title-text">
                         <h3>Digio API Configuration</h3>
                         <p>KYC verification, e-signing, and document management services.</p>
@@ -605,72 +357,169 @@
                             </span>
                         </div>
                     </div>
-                    <button type="submit" class="btn-save" id="save-digio">💾 Save Digio Settings</button>
+                    <button type="submit" class="btn-save" id="save-digio"><svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle;"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg> Save Digio Settings</button>
                 </form>
             </div>
         </div>
 
-        <!-- RAZORPAY PANEL -->
-        <div id="panel-razorpay" class="settings-panel">
-            <div class="panel-card">
+
+
+        <!-- KRA PANEL -->
+        <div id="panel-kra" class="settings-panel">
+            <div class="panel-card" style="max-width: 800px;">
                 <div class="panel-title">
-                    <div class="panel-icon razorpay">💳</div>
+                    <div class="panel-icon kra" style="background: rgba(99,102,241,0.15); color: #6366f1;">
+                        <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line></svg>
+                    </div>
                     <div class="panel-title-text">
-                        <h3>Razorpay Payment Gateway</h3>
-                        <p>Configure Razorpay for payment processing and subscription management.</p>
+                        <h3>NDML KRA Configuration</h3>
+                        <p>Setup SOAP endpoints for registration/inquiry and SFTP server credentials for PDF uploads.</p>
                     </div>
                 </div>
-                <div class="info-note">ℹ️ Get credentials from your Razorpay dashboard at dashboard.razorpay.com</div>
-                <form id="form-razorpay" onsubmit="saveSettings(event, 'razorpay')">
-                    <div class="form-grid">
+                <div class="info-note">ℹ️ Supports both live production and pilot UAT environment profiles for NDML KRA verification.</div>
+                
+                <!-- Connection Test Result Banner -->
+                <div id="kraTestResult" class="alert-box" style="display: none; margin-bottom: 20px;">
+                    <div style="flex: 1;">
+                        <strong id="kraTestResultTitle"></strong>
+                        <p id="kraTestResultDesc" style="margin-top: 4px; font-size: 12px;"></p>
+                    </div>
+                </div>
+
+                <form id="form-kra" onsubmit="saveSettings(event, 'kra')">
+                    <h4 style="font-size: 13px; font-weight:700; color:var(--text-dark); margin-bottom: 12px; text-transform:uppercase; letter-spacing:0.5px;">SOAP Webservices</h4>
+                    <div class="form-grid" style="margin-bottom: 24px;">
                         <div class="form-group">
-                            <label>Key ID</label>
-                            <input type="text" name="key_id" id="razorpay-key_id" placeholder="rzp_live_••••••••" />
+                            <label>NDML User ID / POS Code</label>
+                            <input type="text" name="ndml_user_id" id="kra-ndml_user_id" placeholder="e.g. USER1234" />
                         </div>
                         <div class="form-group">
-                            <label>Key Secret</label>
+                            <label>MI Code / Okra Code (BP ID)</label>
+                            <input type="text" name="ndml_bp_id" id="kra-ndml_bp_id" placeholder="e.g. B1465" />
+                        </div>
+                        <div class="form-group">
+                            <label>Portal Login Password</label>
                             <div class="pw-wrap">
-                                <input type="password" name="key_secret" id="razorpay-key_secret" placeholder="••••••••••••••••" />
-                                <button type="button" class="eye-btn" onclick="togglePw('razorpay-key_secret', this)" title="Show/Hide">
+                                <input type="password" name="ndml_password" id="kra-ndml_password" placeholder="••••••••" />
+                                <button type="button" class="eye-btn" onclick="togglePw('kra-ndml_password', this)" title="Show/Hide">
+                                    <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Passkey (Registration Hashing)</label>
+                            <div class="pw-wrap">
+                                <input type="password" name="ndml_passkey" id="kra-ndml_passkey" placeholder="e.g. SecretPasskey" />
+                                <button type="button" class="eye-btn" onclick="togglePw('kra-ndml_passkey', this)" title="Show/Hide">
                                     <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                                 </button>
                             </div>
                         </div>
                         <div class="form-group full">
-                            <label>Webhook Secret</label>
+                            <label>Encryption Key (Inquiry Passcode)</label>
                             <div class="pw-wrap">
-                                <input type="password" name="webhook_secret" id="razorpay-webhook_secret" placeholder="Webhook signing secret" />
-                                <button type="button" class="eye-btn" onclick="togglePw('razorpay-webhook_secret', this)" title="Show/Hide">
+                                <input type="password" name="ndml_encryption_key" id="kra-ndml_encryption_key" placeholder="e.g. EncKey8" />
+                                <button type="button" class="eye-btn" onclick="togglePw('kra-ndml_encryption_key', this)" title="Show/Hide">
                                     <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                                 </button>
                             </div>
                         </div>
+                    </div>
+
+                    <div class="divider"></div>
+
+                    <h4 style="font-size: 13px; font-weight:700; color:var(--text-dark); margin-bottom: 12px; text-transform:uppercase; letter-spacing:0.5px;">SFTP Server Document Upload</h4>
+                    <div class="form-grid" style="margin-bottom: 24px;">
+                        <div class="form-group full">
+                            <label>SFTP Server Host</label>
+                            <input type="text" name="sftp_host" id="kra-sftp_host" placeholder="e.g. sftp.kra.ndml.in" />
+                        </div>
                         <div class="form-group">
-                            <label>Environment</label>
-                            <select name="environment" id="razorpay-environment">
-                                <option value="live">Live</option>
-                                <option value="test">Test Mode</option>
+                            <label>SFTP Port</label>
+                            <input type="number" name="sftp_port" id="kra-sftp_port" placeholder="22" />
+                        </div>
+                        <div class="form-group">
+                            <label>SFTP Username</label>
+                            <input type="text" name="sftp_username" id="kra-sftp_username" placeholder="e.g. sftp_user" />
+                        </div>
+                        <div class="form-group full">
+                            <label>SFTP Password</label>
+                            <div class="pw-wrap">
+                                <input type="password" name="sftp_password" id="kra-sftp_password" placeholder="••••••••" />
+                                <button type="button" class="eye-btn" onclick="togglePw('kra-sftp_password', this)" title="Show/Hide">
+                                    <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="divider"></div>
+
+                    <h4 style="font-size: 13px; font-weight:700; color:var(--text-dark); margin-bottom: 12px; text-transform:uppercase; letter-spacing:0.5px;">Workflow Modes & Automation</h4>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Environment Mode</label>
+                            <select name="ndml_uat_mode" id="kra-ndml_uat_mode">
+                                <option value="1">UAT / Pilot Server</option>
+                                <option value="0">Production Server</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Auto-Sync Trigger</label>
+                            <select name="auto_upload_on_approval" id="kra-auto_upload_on_approval">
+                                <option value="1">Auto-Upload on KYC Approval</option>
+                                <option value="0">Disabled (Manual Sync Only)</option>
                             </select>
                         </div>
                     </div>
-                    <button type="submit" class="btn-save" id="save-razorpay">💾 Save Razorpay Settings</button>
+
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:32px;">
+                        <button type="submit" class="btn-save" id="save-kra" style="margin-top:0;"><svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle;"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg> Save KRA Settings</button>
+                        
+                        <div style="display:flex; gap:12px;">
+                            <button type="button" class="btn btn-sync" id="btn-test-soap" onclick="runKraTest('soap')" style="font-size:12px; padding:10px 16px;">⚡ Test SOAP API</button>
+                            <button type="button" class="btn btn-sync" id="btn-test-upload" onclick="runKraTest('upload')" style="font-size:12px; padding:10px 16px;">📁 Test SFTP Upload</button>
+                        </div>
+                    </div>
                 </form>
             </div>
         </div>
 
-    </div><!-- /content -->
-</div><!-- /main -->
 
+
+        <!-- KYC PANEL -->
+        <div id="panel-kyc" class="settings-panel">
+            <div class="panel-card">
+                <div class="panel-title">
+                    <div class="panel-icon kyc" style="background: rgba(16,185,129,0.15); color: #10b981;">
+                        <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                    </div>
+                    <div class="panel-title-text">
+                        <h3>KYC Declaration Settings</h3>
+                        <p>Configure the legal authorization text users must agree to before submitting KYC.</p>
+                    </div>
+                </div>
+                <div class="info-note">ℹ️ This text is displayed above the submit button on the user's KYC verification page.</div>
+                <form id="form-kyc" onsubmit="saveSettings(event, 'kyc')">
+                    <div class="form-grid">
+                        <div class="form-group full">
+                            <label>KYC Authorization Declaration Text</label>
+                            <textarea name="declaration" id="kyc-declaration" placeholder="Enter KYC declaration text" required style="min-height: 120px; resize: vertical;"></textarea>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-save" id="save-kyc"><svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle;"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg> Save KYC Settings</button>
+                </form>
+            </div>
+        </div>
+@endsection
+
+@section('scripts')
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
 
 <script>
     const API_BASE = '/api';
-    const groups   = ['smtp', 'sms', 'digio', 'razorpay'];
-    const adminToken = localStorage.getItem('admin_token');
-
-    // Redirect if not logged in
-    if (!adminToken) window.location.href = '/admin/login';
+    const groups   = ['smtp', 'digio', 'kyc', 'kra'];
 
     function getHeaders() {
         return {
@@ -679,20 +528,6 @@
             'Authorization': `Bearer ${adminToken}`,
         };
     }
-
-    // ---- Admin info ----
-    const adminInfo = JSON.parse(localStorage.getItem('admin_info') || '{}');
-    if (adminInfo.name) {
-        document.getElementById('sidebarName').textContent = adminInfo.name;
-        document.getElementById('sidebarAvatar').textContent = adminInfo.name.charAt(0).toUpperCase();
-    }
-
-    document.getElementById('sidebarLogout').addEventListener('click', async () => {
-        await fetch(`${API_BASE}/admin/logout`, { method: 'POST', headers: getHeaders() });
-        localStorage.removeItem('admin_token');
-        localStorage.removeItem('admin_info');
-        window.location.href = '/admin/login';
-    });
 
     // ---- TAB SWITCHING ----
     function switchTab(group) {
@@ -730,6 +565,7 @@
         const formData = new FormData(form);
         const payload  = Object.fromEntries(formData.entries());
 
+        const originalHtml = btn.innerHTML;
         btn.disabled = true;
         btn.innerHTML = '⏳ Saving...';
 
@@ -751,7 +587,49 @@
             showToast('Network error. Please try again.', 'error');
         } finally {
             btn.disabled = false;
-            btn.innerHTML = '💾 Save ' + group.charAt(0).toUpperCase() + group.slice(1) + ' Settings';
+            btn.innerHTML = originalHtml;
+        }
+    }
+
+    // ---- RUN KRA TEST ----
+    async function runKraTest(type) {
+        const btn = document.getElementById(`btn-test-${type}`);
+        const resultBox = document.getElementById('kraTestResult');
+        const titleEl = document.getElementById('kraTestResultTitle');
+        const descEl = document.getElementById('kraTestResultDesc');
+
+        const originalHtml = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '⏳ Testing...';
+
+        resultBox.style.display = 'none';
+        resultBox.className = 'alert-box';
+
+        try {
+            const res = await fetch(`${API_BASE}/admin/settings/kra/test-${type}`, {
+                method: 'POST',
+                headers: getHeaders()
+            });
+            const data = await res.json();
+            
+            resultBox.style.display = 'flex';
+            if (res.ok && (data.status === 'success' || data.success)) {
+                resultBox.className = 'alert-box success';
+                titleEl.innerHTML = '✅ Connection Succeeded';
+                descEl.innerHTML = data.message;
+            } else {
+                resultBox.className = 'alert-box error';
+                titleEl.innerHTML = '❌ Connection Failed';
+                descEl.innerHTML = data.message || 'Unknown error occurred.';
+            }
+        } catch (e) {
+            resultBox.style.display = 'flex';
+            resultBox.className = 'alert-box error';
+            titleEl.innerHTML = '❌ Connection Error';
+            descEl.innerHTML = 'A network error occurred while testing connection.';
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = originalHtml;
         }
     }
 
@@ -796,5 +674,4 @@
     loadSummary();
     loadSettings('smtp'); // Load active tab on page load
 </script>
-</body>
-</html>
+@endsection

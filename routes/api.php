@@ -49,6 +49,8 @@ Route::prefix('user')->middleware('auth:sanctum')->group(function () {
 // --------------------------
 Route::prefix('admin')->group(function () {
     Route::post('/login', [AdminAuthController::class, 'login']);
+    Route::post('/forgot-password', [AdminAuthController::class, 'forgotPassword']);
+    Route::post('/reset-password', [AdminAuthController::class, 'resetPassword']);
 });
 
 // --------------------------
@@ -57,19 +59,38 @@ Route::prefix('admin')->group(function () {
 Route::prefix('admin')->middleware(['auth:sanctum', AdminMiddleware::class])->group(function () {
     Route::get('/me',     [AdminAuthController::class, 'me']);
     Route::post('/logout', [AdminAuthController::class, 'logout']);
+    Route::post('/change-password', [AdminAuthController::class, 'changePassword']);
 
     // API Credentials / Settings
     Route::prefix('settings')->group(function () {
         Route::get('/',             [AppSettingController::class, 'index']);
+        Route::post('/kra/test-soap', [\App\Http\Controllers\Admin\KraSettingsController::class, 'testSoap']);
+        Route::post('/kra/test-upload', [\App\Http\Controllers\Admin\KraSettingsController::class, 'testUpload']);
         Route::get('/{group}',      [AppSettingController::class, 'show']);
         Route::post('/{group}',     [AppSettingController::class, 'update']);
     });
 
-    // User Management
+    // User Management (Customers List)
     Route::prefix('users')->group(function () {
         Route::get('/',             [AdminUserController::class, 'index']);
+        Route::post('/',            [AdminUserController::class, 'store']);
+        Route::get('/dashboard-stats', [AdminUserController::class, 'dashboardStats']);
         Route::get('/{id}',         [AdminUserController::class, 'show']);
+        Route::put('/{id}',         [AdminUserController::class, 'update']);
         Route::get('/{id}/esign',   [AdminUserController::class, 'downloadEsign']);
+        Route::post('/{id}/resend-agreement-email', [AdminUserController::class, 'resendAgreementEmail']);
+        Route::get('/{id}/download-consolidated', [AdminUserController::class, 'downloadConsolidated']);
+        Route::post('/{id}/generate-digio-kyc-link', [AdminUserController::class, 'generateDigioKycLink']);
+        Route::get('/{id}/media/{type}', [AdminUserController::class, 'getKycMedia']);
+        Route::post('/{id}/media/{type}', [AdminUserController::class, 'uploadKycMedia']);
+    });
+
+    // Team Management (Admin/Staff List)
+    Route::prefix('team')->group(function () {
+        Route::get('/',             [\App\Http\Controllers\Api\AdminTeamController::class, 'index']);
+        Route::post('/',            [\App\Http\Controllers\Api\AdminTeamController::class, 'store']);
+        Route::put('/{id}',         [\App\Http\Controllers\Api\AdminTeamController::class, 'update']);
+        Route::delete('/{id}',      [\App\Http\Controllers\Api\AdminTeamController::class, 'destroy']);
     });
 
     // KYC Management

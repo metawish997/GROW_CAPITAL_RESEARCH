@@ -27,17 +27,21 @@ class KycController extends Controller
         }
 
         if (!$kyc) {
+            $declarationText = \App\Models\AppSetting::getValue('kyc', 'declaration', "I hereby authorize Grow Capital Research to retrieve my profile and verify my identity details via Digio secure KYC gateway. I confirm that the Aadhaar and PAN details provided belong to me and are correct.");
             return response()->json([
                 'success'    => true,
                 'kyc_status' => 'not_started',
                 'kyc'        => null,
+                'declaration_text' => $declarationText,
                 'message'    => 'KYC not started yet.',
             ]);
         }
 
+        $declarationText = \App\Models\AppSetting::getValue('kyc', 'declaration', "I hereby authorize Grow Capital Research to retrieve my profile and verify my identity details via Digio secure KYC gateway. I confirm that the Aadhaar and PAN details provided belong to me and are correct.");
         return response()->json([
             'success'    => true,
             'kyc_status' => $kyc->status,
+            'declaration_text' => $declarationText,
             'kyc'        => [
                 'id'                => $kyc->id,
                 'status'            => $kyc->status,
@@ -106,6 +110,14 @@ class KycController extends Controller
                 'message' => $result['error'] ?? 'Failed to initiate KYC.',
             ], 500);
         }
+
+        // Log declaration acceptance audit trail
+        $declarationText = \App\Models\AppSetting::getValue('kyc', 'declaration', "I hereby authorize Grow Capital Research to retrieve my profile and verify my identity details via Digio secure KYC gateway. I confirm that the Aadhaar and PAN details provided belong to me and are correct.");
+        KycVerification::where('digio_document_id', $result['document_id'])->update([
+            'declaration_accepted' => true,
+            'declaration_accepted_at' => now(),
+            'declaration_text' => $declarationText,
+        ]);
 
         return response()->json([
             'success'      => true,

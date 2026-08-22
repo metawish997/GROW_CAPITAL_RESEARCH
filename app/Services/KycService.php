@@ -179,6 +179,19 @@ class KycService
 
             $kyc = KycVerification::findByDocumentId($documentId);
             if ($kyc) {
+                // If newly approved, download media
+                if ($currentStatus === 'approved') {
+                    $user = $kyc->user;
+                    if ($user) {
+                        if (!empty($kycDetails['selfie_file'])) {
+                            $kycDetails['selfie_local_path'] = $this->downloadAndStoreMedia($kycDetails['selfie_file'], 'selfie', $user->id);
+                        }
+                        if (!empty($kycDetails['signature_file'])) {
+                            $kycDetails['signature_local_path'] = $this->downloadAndStoreMedia($kycDetails['signature_file'], 'signature', $user->id);
+                        }
+                    }
+                }
+
                 $kyc->update([
                     'status'           => $currentStatus,
                     'kyc_details'      => $kycDetails,
@@ -186,13 +199,74 @@ class KycService
                     'kyc_completed_at' => ($currentStatus === 'approved') ? ($kyc->kyc_completed_at ?? now()) : null,
                 ]);
 
-                // Sync mobile number to user if approved
-                if ($currentStatus === 'approved' && !empty($kyc->customer_mobile)) {
+                // Sync mobile, phone & extracted demographics directly to the user profile if approved
+                if ($currentStatus === 'approved') {
                     $user = $kyc->user;
-                    if ($user && empty($user->mobile)) {
-                        $user->update(['mobile' => $kyc->customer_mobile]);
-                    } elseif ($user && $user->mobile !== $kyc->customer_mobile) {
-                        $user->update(['mobile' => $kyc->customer_mobile]);
+                    if ($user) {
+                        $updateData = [];
+
+                        if (empty($user->mobile) || $user->mobile !== $kyc->customer_mobile) {
+                            $updateData['mobile'] = $kyc->customer_mobile;
+                        }
+                        if (empty($user->phone)) {
+                            $updateData['phone'] = $kyc->customer_mobile;
+                        }
+
+                        $aadhaar = $kycDetails['aadhaar'] ?? null;
+                        $pan = $kycDetails['pan'] ?? null;
+
+                        if ($aadhaar) {
+                            if (empty($user->dob) && !empty($aadhaar['dob'])) {
+                                $updateData['dob'] = $aadhaar['dob'];
+                            }
+                            if (empty($user->address) && !empty($aadhaar['current_address'])) {
+                                $updateData['address'] = $aadhaar['current_address'];
+                            }
+                            
+                            $addrDetails = $aadhaar['current_address_details'] ?? null;
+                            if ($addrDetails) {
+                                if (empty($user->city) && !empty($addrDetails['district_or_city'])) {
+                                    $updateData['city'] = $addrDetails['district_or_city'];
+                                }
+                                if (empty($user->state) && !empty($addrDetails['state'])) {
+                                    $updateData['state'] = $addrDetails['state'];
+                                }
+                                if (empty($user->pincode) && !empty($addrDetails['pincode'])) {
+                                    $updateData['pincode'] = $addrDetails['pincode'];
+                                }
+                            }
+
+                            // Extract Father's Name from Aadhaar address Care of (C/O) prefix if not set
+                            if (empty($user->father_name) && !empty($aadhaar['current_address'])) {
+                                $parts = explode(',', $aadhaar['current_address']);
+                                if (count($parts) > 0 && str_word_count($parts[0]) > 1) {
+                                    $updateData['father_name'] = trim($parts[0]);
+                                }
+                            }
+                        }
+
+                        if ($pan) {
+                            if (empty($user->pan_card) && !empty($pan['id_number'])) {
+                                $updateData['pan_card'] = strtoupper($pan['id_number']);
+                            }
+                            if (empty($user->pan_card_name) && !empty($pan['name'])) {
+                                $updateData['pan_card_name'] = strtoupper($pan['name']);
+                            }
+                            if (empty($updateData['dob']) && empty($user->dob) && !empty($pan['dob'])) {
+                                $updateData['dob'] = $pan['dob'];
+                            }
+                        }
+
+                        if (!empty($updateData)) {
+                            $user->update($updateData);
+                        }
+
+                        // Trigger KRA auto upload if enabled
+                        $settings = \App\Models\KraSetting::getSettings();
+                        if ($settings && $settings->auto_upload_on_approval) {
+                            Log::info('[KYC] Dispatching KRA auto-upload for User ID: ' . $user->id);
+                            \App\Jobs\UploadKraDocumentsToSftp::dispatch($user->id);
+                        }
                     }
                 }
             }
@@ -247,18 +321,26 @@ class KycService
     public function parseKycDetails(array $actions): array
     {
         $kycDetails = [
-            'aadhaar'        => null,
-            'signature_file' => null,
-            'selfie_file'    => null,
-            'face_match'     => null,
+            'aadhaar'              => null,
+            'pan'                  => null,
+            'signature_file'       => null,
+            'signature_local_path' => null,
+            'selfie_file'          => null,
+            'selfie_local_path'    => null,
+            'face_match'           => null,
         ];
 
         foreach ($actions as $action) {
             $type = $action['type'] ?? '';
 
-            // Aadhaar + Face Match
-            if ($type === 'digilocker' && isset($action['details']['aadhaar'])) {
-                $kycDetails['aadhaar']    = $action['details']['aadhaar'];
+            // Aadhaar + PAN + Face Match
+            if ($type === 'digilocker') {
+                if (isset($action['details']['aadhaar'])) {
+                    $kycDetails['aadhaar'] = $action['details']['aadhaar'];
+                }
+                if (isset($action['details']['pan'])) {
+                    $kycDetails['pan'] = $action['details']['pan'];
+                }
                 $kycDetails['face_match'] = $action['face_match_result'] ?? null;
             }
 
@@ -274,5 +356,50 @@ class KycService
         }
 
         return $kycDetails;
+    }
+
+    /**
+     * Download the media files from Digio and store them locally.
+     */
+    public function downloadAndStoreMedia(string $fileId, string $type, string $userId): ?string
+    {
+        if (empty($this->clientId) || empty($this->clientSecret) || empty($this->baseUrl)) {
+            Log::error('[KYC] Credentials missing for media fetch');
+            return null;
+        }
+
+        try {
+            Log::info("[KYC] Fetching media from Digio", ['type' => $type, 'file_id' => $fileId]);
+            $url = "{$this->baseUrl}/client/kyc/v2/media/{$fileId}";
+            $response = Http::withBasicAuth($this->clientId, $this->clientSecret)
+                ->get($url, [
+                    'doc_type' => $type,
+                    'base64'   => 'true',
+                ]);
+
+            if ($response->successful()) {
+                $data = $response->json();
+                if (!empty($data['file_in_base64'])) {
+                    $binary = base64_decode($data['file_in_base64']);
+                    
+                    // Create storage directory if missing
+                    if (!\Illuminate\Support\Facades\Storage::disk('local')->exists('kyc_media')) {
+                        \Illuminate\Support\Facades\Storage::disk('local')->makeDirectory('kyc_media');
+                    }
+
+                    $fileName = "kyc_media/{$userId}_{$type}_{$fileId}.jpg";
+                    \Illuminate\Support\Facades\Storage::disk('local')->put($fileName, $binary);
+                    
+                    $fullPath = \Illuminate\Support\Facades\Storage::disk('local')->path($fileName);
+                    Log::info("[KYC] Media saved locally", ['path' => $fullPath]);
+                    return $fullPath;
+                }
+            } else {
+                Log::error("[KYC] Failed to fetch media from Digio", ['type' => $type, 'response' => $response->body()]);
+            }
+        } catch (\Exception $e) {
+            Log::error("[KYC] Media download exception: " . $e->getMessage());
+        }
+        return null;
     }
 }
