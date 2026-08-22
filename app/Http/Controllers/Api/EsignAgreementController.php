@@ -455,21 +455,11 @@ class EsignAgreementController extends Controller
             });
             Log::info('[EMAIL] Agreement email sent to customer: ' . $user->email);
 
-            // B. Compile Terms & Conditions PDF dynamically
-            $termsHtml = view('pdf.terms', [
-                'customer_name' => $customerName,
-                'date'          => $executionDate,
-            ])->render();
-            $termsPdf = Pdf::loadHTML($termsHtml)->output();
-
-            // C. Send welcome onboarding email
-            Mail::send('emails.welcome', ['customer_name' => $customerName], function ($message) use ($user, $termsPdf, $fromAddress, $fromName) {
+            // B. Send welcome onboarding email (no terms PDF needed — already in signed agreement)
+            Mail::send('emails.welcome', ['customer_name' => $customerName], function ($message) use ($user, $fromAddress, $fromName) {
                 $message->to($user->email)
                     ->from($fromAddress, $fromName)
-                    ->subject('Welcome to Grow Capital Research - Subscription Activated')
-                    ->attachData($termsPdf, 'grow_capital_terms_and_conditions.pdf', [
-                        'mime' => 'application/pdf',
-                    ]);
+                    ->subject('Welcome to Grow Capital Research - Subscription Activated');
             });
             Log::info('[EMAIL] Welcome onboarding email with terms PDF sent to customer: ' . $user->email);
 
