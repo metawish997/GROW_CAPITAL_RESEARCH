@@ -115,8 +115,8 @@ class AdminUserController extends Controller
 
             $digioKycUrl = null;
             if ($user->kyc && $user->kyc->digio_document_id && !str_starts_with($user->kyc->digio_document_id, 'MANUAL_') && !in_array($user->kyc->status, ['approved', 'completed'])) {
-                $digioSettings = AppSetting::getGroup('digio');
-                $baseUrl = $digioSettings['base_url'] ?? '';
+                $digioSettings = AppSetting::getActiveDigio();
+                $baseUrl = $digioSettings['base_url'];
                 $isSandbox = str_contains($baseUrl, 'ext.digio');
                 $redirectBase = $isSandbox
                     ? 'https://ext.digio.in/#/gateway/login/'
@@ -159,10 +159,10 @@ class AdminUserController extends Controller
         $filename = "GROW_CAPITAL_RESEARCH_Agreement_{$user->id}.pdf";
 
         if ($agreement->digio_document_id) {
-            $digio = \App\Models\AppSetting::getGroup('digio');
-            $clientId = $digio['client_id'] ?? null;
-            $clientSecret = $digio['client_secret'] ?? null;
-            $baseUrl = rtrim($digio['base_url'] ?? '', '/');
+            $digio = \App\Models\AppSetting::getActiveDigio();
+            $clientId = $digio['client_id'];
+            $clientSecret = $digio['client_secret'];
+            $baseUrl = $digio['base_url'];
 
             if ($clientId && $clientSecret && $baseUrl) {
                 $downloadUrl = "{$baseUrl}/v2/client/document/download?document_id={$agreement->digio_document_id}";

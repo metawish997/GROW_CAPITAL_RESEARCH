@@ -15,7 +15,7 @@ class AppSettingController extends Controller
     // Allowed keys per group (prevents arbitrary key injection)
     private array $allowedKeys = [
         'smtp' => ['host', 'port', 'username', 'password', 'encryption', 'from_address', 'from_name'],
-        'digio'    => ['client_id', 'client_secret', 'base_url', 'environment', 'workflow'],
+        'digio'    => ['client_id', 'client_secret', 'base_url', 'environment', 'workflow', 'sandbox_client_id', 'sandbox_client_secret', 'sandbox_base_url', 'sandbox_workflow', 'active_mode'],
         'kyc'      => ['declaration'],
     ];
 
@@ -61,7 +61,7 @@ class AppSettingController extends Controller
         $settings = AppSetting::getGroup($group);
 
         // Mask sensitive fields before returning
-        $sensitiveKeys = ['password', 'key_secret', 'webhook_secret', 'client_secret', 'api_key'];
+        $sensitiveKeys = ['password', 'key_secret', 'webhook_secret', 'client_secret', 'sandbox_client_secret', 'api_key'];
         foreach ($sensitiveKeys as $key) {
             if (isset($settings[$key]) && $settings[$key] !== '') {
                 $settings[$key] = '••••••••'; // masked
@@ -131,7 +131,7 @@ class AppSettingController extends Controller
         }
 
         // Don't overwrite masked passwords (user left field unchanged)
-        $sensitiveKeys = ['password', 'key_secret', 'webhook_secret', 'client_secret', 'api_key'];
+        $sensitiveKeys = ['password', 'key_secret', 'webhook_secret', 'client_secret', 'sandbox_client_secret', 'api_key'];
         foreach ($sensitiveKeys as $key) {
             if (isset($data[$key]) && $data[$key] === '••••••••') {
                 unset($data[$key]); // skip, keep existing value

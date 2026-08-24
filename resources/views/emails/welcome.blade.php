@@ -103,7 +103,7 @@
             <p>Dear {{ $customer_name }},</p>
             <p>Yogendra Singh Tomar Proprietor of Grow Capital Research is a SEBI (Securities and Exchange Board of India) registered Research Analyst having registration number: <strong>INH000029397</strong> offering research services.</p>
             <p>You are receiving this mail as you have subscribed to our research services.</p>
-            <p>I request you to kindly go through this Welcome mail and visit our website <a href="https://growcapitals.com" target="_blank" style="color:#004b87; font-weight:600; text-decoration:none;">growcapitals.com</a> and if you have any query feel free to reach out to us at <a href="mailto:support@growcapitals.com" style="color:#004b87; font-weight:600; text-decoration:none;">support@growcapitals.com</a>.</p>
+            <p>I request you to kindly go through this Welcome mail and visit our website <a href="https://growcapitalresearch.com" target="_blank" style="color:#004b87; font-weight:600; text-decoration:none;">growcapitalresearch.com</a> and if you have any query feel free to reach out to us at <a href="mailto:info@growcapitalresearch.com" style="color:#004b87; font-weight:600; text-decoration:none;">info@growcapitalresearch.com</a>.</p>
 
             <!-- Important Notes -->
             <div class="section-title" style="color:#b45309; border-bottom-color:#fef3c7;">Important Notes</div>
@@ -130,7 +130,7 @@
             </ul>
 
             <p style="background-color:#f8fafc; border-left:4px solid #004b87; padding:12px 16px; font-size:14px; font-style:italic; color:#475569; margin:24px 0;">
-                Our scope of work is restricted to offering the trading/research recommendations. Investment in securities is subject to market risk, though sufficient research, attempts are made for predicting markets, but there is no surety of return or accuracy of any kind is guaranteed. Clients are recommended to consider all the research recommendation as just an opinion and make investment decision on their own. In case of any query feel free to contact us at support@growcapitals.com.
+                Our scope of work is restricted to offering the trading/research recommendations. Investment in securities is subject to market risk, though sufficient research, attempts are made for predicting markets, but there is no surety of return or accuracy of any kind is guaranteed. Clients are recommended to consider all the research recommendation as just an opinion and make investment decision on their own. In case of any query feel free to contact us at info@growcapitalresearch.com.
             </p>
 
             <p style="margin-top: 32px;">

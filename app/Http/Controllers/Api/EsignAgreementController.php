@@ -51,10 +51,10 @@ class EsignAgreementController extends Controller
 
         // If pending, check Digio status
         if ($agreement->status === 'pending' && $agreement->digio_document_id) {
-            $digio = AppSetting::getGroup('digio');
-            $clientId = $digio['client_id'] ?? null;
-            $clientSecret = $digio['client_secret'] ?? null;
-            $baseUrl = rtrim($digio['base_url'] ?? '', '/');
+            $digio = AppSetting::getActiveDigio();
+            $clientId = $digio['client_id'];
+            $clientSecret = $digio['client_secret'];
+            $baseUrl = $digio['base_url'];
 
             if ($clientId && $clientSecret && $baseUrl) {
                 try {
@@ -172,10 +172,10 @@ class EsignAgreementController extends Controller
         }
 
         // Fetch Digio Credentials
-        $digio = AppSetting::getGroup('digio');
-        $clientId = $digio['client_id'] ?? null;
-        $clientSecret = $digio['client_secret'] ?? null;
-        $baseUrl = rtrim($digio['base_url'] ?? '', '/');
+        $digio = AppSetting::getActiveDigio();
+        $clientId = $digio['client_id'];
+        $clientSecret = $digio['client_secret'];
+        $baseUrl = $digio['base_url'];
 
         // Generate PDF
         $data = [
@@ -334,10 +334,10 @@ class EsignAgreementController extends Controller
         $filename = 'GROW_CAPITAL_RESEARCH_Agreement.pdf';
 
         if ($agreement && $agreement->digio_document_id) {
-            $digio = \App\Models\AppSetting::getGroup('digio');
-            $clientId = $digio['client_id'] ?? null;
-            $clientSecret = $digio['client_secret'] ?? null;
-            $baseUrl = rtrim($digio['base_url'] ?? '', '/');
+            $digio = \App\Models\AppSetting::getActiveDigio();
+            $clientId = $digio['client_id'];
+            $clientSecret = $digio['client_secret'];
+            $baseUrl = $digio['base_url'];
 
             if ($clientId && $clientSecret && $baseUrl) {
                 $downloadUrl = "{$baseUrl}/v2/client/document/download?document_id={$agreement->digio_document_id}";
@@ -402,10 +402,10 @@ class EsignAgreementController extends Controller
         $fileName = "grow_capital_agreement_{$user->id}.pdf";
 
         if ($agreement->digio_document_id) {
-            $digio = AppSetting::getGroup('digio');
-            $clientId = $digio['client_id'] ?? null;
-            $clientSecret = $digio['client_secret'] ?? null;
-            $baseUrl = rtrim($digio['base_url'] ?? '', '/');
+            $digio = AppSetting::getActiveDigio();
+            $clientId = $digio['client_id'];
+            $clientSecret = $digio['client_secret'];
+            $baseUrl = $digio['base_url'];
 
             if ($clientId && $clientSecret && $baseUrl) {
                 $downloadUrl = "{$baseUrl}/v2/client/document/download?document_id={$agreement->digio_document_id}";

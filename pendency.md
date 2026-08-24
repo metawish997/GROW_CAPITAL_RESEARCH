@@ -6,4 +6,5 @@
 6. send mail to customer [fixed]
 7. download kyc & agreement [fixed]
 8. one user is logged in at one place ?[fixed]
-9. password change and forgot option for admin/staff user
+9. password change and forgot option for admin/staff user [fixed]
+10. yet to upload user/dashboard.blade.php, user/kyc.blade.php

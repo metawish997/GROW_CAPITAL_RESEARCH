@@ -137,8 +137,8 @@
         <!-- Footer -->
         <div class="footer">
             <p>&copy; {{ date('Y') }} Grow Capital Research. All rights reserved.</p>
-            <p>Registered SEBI Research Analyst: INH000000000</p>
-            <p>Need assistance? Contact us at <a href="mailto:support@growcapitals.com">support@growcapitals.com</a></p>
+            <p>Registered SEBI Research Analyst: INH000029397</p>
+            <p>Need assistance? Contact us at <a href="mailto:info@growcapitalresearch.com">info@growcapitalresearch.com</a></p>
         </div>
     </div>
 </body>

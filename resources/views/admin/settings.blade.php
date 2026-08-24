@@ -322,43 +322,85 @@
                         <p>KYC verification, e-signing, and document management services.</p>
                     </div>
                 </div>
-                <div class="info-note">ℹ️ Get credentials from your Digio dashboard at app.digio.in</div>
-                <form id="form-digio" onsubmit="saveSettings(event, 'digio')">
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label>Client ID</label>
-                            <input type="text" name="client_id" id="digio-client_id" placeholder="DID••••••••••" />
-                        </div>
-                        <div class="form-group">
-                            <label>Client Secret</label>
-                            <div class="pw-wrap">
-                                <input type="password" name="client_secret" id="digio-client_secret" placeholder="••••••••••••" />
-                                <button type="button" class="eye-btn" onclick="togglePw('digio-client_secret', this)" title="Show/Hide">
-                                    <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                                </button>
+
+                <!-- MODE TOGGLE -->
+                <div style="display:flex; align-items:center; justify-content:space-between; background:rgba(0,75,135,0.06); border:1px solid var(--border); border-radius:12px; padding:14px 18px; margin-bottom:20px;">
+                    <div>
+                        <div style="font-size:13px; font-weight:700; color:var(--text-dark);">Active Mode</div>
+                        <div style="font-size:11px; color:var(--text-muted); margin-top:2px;" id="digio-mode-hint">Currently using <strong>Live</strong> credentials</div>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <span style="font-size:12px; font-weight:600; color:var(--text-muted);" id="mode-label-live">Live</span>
+                        <label style="position:relative; display:inline-block; width:48px; height:26px; cursor:pointer;">
+                            <input type="checkbox" id="digio-mode-toggle" onchange="toggleDigioMode(this)" style="opacity:0; width:0; height:0;">
+                            <span style="position:absolute; inset:0; background:#004b87; border-radius:26px; transition:0.3s;" id="digio-toggle-track"></span>
+                            <span style="position:absolute; top:3px; left:3px; width:20px; height:20px; background:#fff; border-radius:50%; transition:0.3s; box-shadow:0 1px 3px rgba(0,0,0,0.2);" id="digio-toggle-thumb"></span>
+                        </label>
+                        <span style="font-size:12px; font-weight:600; color:var(--text-muted);" id="mode-label-sandbox">Sandbox</span>
+                    </div>
+                </div>
+
+                <!-- LIVE CREDENTIALS -->
+                <div id="digio-live-section">
+                    <div class="info-note">🟢 <strong>Live</strong> — Production credentials from app.digio.in</div>
+                    <form id="form-digio-live" onsubmit="saveDigioSettings(event, 'live')">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Client ID</label>
+                                <input type="text" name="client_id" id="digio-client_id" placeholder="DID••••••••••" />
+                            </div>
+                            <div class="form-group">
+                                <label>Client Secret</label>
+                                <div class="pw-wrap">
+                                    <input type="password" name="client_secret" id="digio-client_secret" placeholder="••••••••••••" />
+                                    <button type="button" class="eye-btn" onclick="togglePw('digio-client_secret', this)" title="Show/Hide">
+                                        <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Base URL</label>
+                                <input type="url" name="base_url" id="digio-base_url" placeholder="https://api.digio.in" />
+                            </div>
+                            <div class="form-group">
+                                <label>KYC Workflow</label>
+                                <input type="text" name="workflow" id="digio-workflow" placeholder="e.g. kyc_with_aadhaar" />
                             </div>
                         </div>
-                        <div class="form-group">
-                            <label>Base URL</label>
-                            <input type="url" name="base_url" id="digio-base_url" placeholder="https://api.digio.in" />
+                        <button type="submit" class="btn-save" id="save-digio-live"><svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle;"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg> Save Live Settings</button>
+                    </form>
+                </div>
+
+                <!-- SANDBOX CREDENTIALS -->
+                <div id="digio-sandbox-section" style="display:none;">
+                    <div class="info-note">🟡 <strong>Sandbox</strong> — Testing credentials from ext.digio.in</div>
+                    <form id="form-digio-sandbox" onsubmit="saveDigioSettings(event, 'sandbox')">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Sandbox Client ID</label>
+                                <input type="text" name="sandbox_client_id" id="digio-sandbox_client_id" placeholder="DID••••••••••" />
+                            </div>
+                            <div class="form-group">
+                                <label>Sandbox Client Secret</label>
+                                <div class="pw-wrap">
+                                    <input type="password" name="sandbox_client_secret" id="digio-sandbox_client_secret" placeholder="••••••••••••" />
+                                    <button type="button" class="eye-btn" onclick="togglePw('digio-sandbox_client_secret', this)" title="Show/Hide">
+                                        <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Sandbox Base URL</label>
+                                <input type="url" name="sandbox_base_url" id="digio-sandbox_base_url" value="https://ext.digio.in:444" placeholder="https://ext.digio.in:444" />
+                            </div>
+                            <div class="form-group">
+                                <label>Sandbox Workflow</label>
+                                <input type="text" name="sandbox_workflow" id="digio-sandbox_workflow" placeholder="e.g. kyc_with_aadhaar" />
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <label>Environment</label>
-                            <select name="environment" id="digio-environment">
-                                <option value="production">Production</option>
-                                <option value="sandbox">Sandbox / Testing</option>
-                            </select>
-                        </div>
-                        <div class="form-group full">
-                            <label>KYC Workflow / Template Name</label>
-                            <input type="text" name="workflow" id="digio-workflow" placeholder="e.g. kyc_with_aadhaar" />
-                            <span style="font-size:11px; color:var(--text-muted); margin-top:5px; display:block; line-height:1.6;">
-                                💡 Digio dashboard → <strong>Templates</strong> me jaake workflow name copy karo. Example: <code style="background:rgba(255,255,255,0.07); padding:2px 7px; border-radius:4px; color:#a5b4fc;">kyc_with_aadhaar</code>
-                            </span>
-                        </div>
-                    </div>
-                    <button type="submit" class="btn-save" id="save-digio"><svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle;"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg> Save Digio Settings</button>
-                </form>
+                        <button type="submit" class="btn-save" id="save-digio-sandbox" style="background:#d97706;"><svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle;"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg> Save Sandbox Settings</button>
+                    </form>
+                </div>
             </div>
         </div>
 
@@ -552,8 +594,98 @@
                 const el = document.getElementById(`${group}-${key}`);
                 if (el) el.value = value || '';
             });
+
+            // Digio: restore toggle state from DB
+            if (group === 'digio' && settings.active_mode) {
+                const isSandbox = settings.active_mode === 'sandbox';
+                const toggle = document.getElementById('digio-mode-toggle');
+                toggle.checked = isSandbox;
+                updateDigioToggleUI(isSandbox);
+            }
         } catch (err) {
             console.warn('Could not load', group, 'settings:', err);
+        }
+    }
+
+    // ---- DIGIO MODE TOGGLE ----
+    function updateDigioToggleUI(isSandbox) {
+        const track = document.getElementById('digio-toggle-track');
+        const thumb = document.getElementById('digio-toggle-thumb');
+        const hint  = document.getElementById('digio-mode-hint');
+        const liveLabel = document.getElementById('mode-label-live');
+        const sandboxLabel = document.getElementById('mode-label-sandbox');
+        const liveSection = document.getElementById('digio-live-section');
+        const sandboxSection = document.getElementById('digio-sandbox-section');
+
+        if (isSandbox) {
+            track.style.background = '#d97706';
+            thumb.style.left = '25px';
+            hint.innerHTML = 'Currently using <strong>Sandbox</strong> credentials';
+            liveLabel.style.color = 'var(--text-muted)';
+            sandboxLabel.style.color = '#d97706';
+            liveSection.style.display = 'none';
+            sandboxSection.style.display = 'block';
+        } else {
+            track.style.background = '#004b87';
+            thumb.style.left = '3px';
+            hint.innerHTML = 'Currently using <strong>Live</strong> credentials';
+            liveLabel.style.color = '#004b87';
+            sandboxLabel.style.color = 'var(--text-muted)';
+            liveSection.style.display = 'block';
+            sandboxSection.style.display = 'none';
+        }
+    }
+
+    async function toggleDigioMode(checkbox) {
+        const mode = checkbox.checked ? 'sandbox' : 'live';
+        updateDigioToggleUI(checkbox.checked);
+
+        // Save mode immediately
+        try {
+            await fetch(`${API_BASE}/admin/settings/digio`, {
+                method: 'POST',
+                headers: getHeaders(),
+                body: JSON.stringify({ active_mode: mode }),
+            });
+            showToast(`Digio switched to ${mode.toUpperCase()} mode`, 'success');
+        } catch (err) {
+            showToast('Failed to switch mode.', 'error');
+        }
+    }
+
+    async function saveDigioSettings(e, mode) {
+        e.preventDefault();
+        const formId = mode === 'sandbox' ? 'form-digio-sandbox' : 'form-digio-live';
+        const btnId = mode === 'sandbox' ? 'save-digio-sandbox' : 'save-digio-live';
+        const form = document.getElementById(formId);
+        const btn = document.getElementById(btnId);
+        const formData = new FormData(form);
+        const payload = Object.fromEntries(formData.entries());
+        // Also include the active mode
+        payload.active_mode = document.getElementById('digio-mode-toggle').checked ? 'sandbox' : 'live';
+
+        const originalHtml = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '⏳ Saving...';
+
+        try {
+            const res = await fetch(`${API_BASE}/admin/settings/digio`, {
+                method: 'POST',
+                headers: getHeaders(),
+                body: JSON.stringify(payload),
+            });
+            const data = await res.json();
+            if (data.success) {
+                showToast(data.message, 'success');
+                document.getElementById('dot-digio').classList.add('configured');
+            } else {
+                showToast(data.message || 'Save failed.', 'error');
+            }
+        } catch (err) {
+            showToast('Network error. Please try again.', 'error');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = originalHtml;
         }
     }
 

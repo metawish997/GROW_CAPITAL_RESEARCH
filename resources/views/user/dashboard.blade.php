@@ -724,7 +724,7 @@
 
 <script>
     const userToken = localStorage.getItem('user_token');
-    if (!userToken) window.location.href = '/login';
+    if (!userToken) window.location.href = 'https://growcapitalresearch.com';
 
     const userInfo = JSON.parse(localStorage.getItem('user_info') || '{}');
     const urlParams = new URLSearchParams(window.location.search);
@@ -748,7 +748,7 @@
                 } catch (e) {}
                 localStorage.removeItem('user_token');
                 localStorage.removeItem('user_info');
-                window.location.href = '/login?logout=timeout';
+                window.location.href = 'https://growcapitalresearch.com';
             }
         }, 1000);
     }
@@ -858,7 +858,7 @@
         } catch (e) {}
         localStorage.removeItem('user_token');
         localStorage.removeItem('user_info');
-        window.location.href = '/login';
+        window.location.href = 'https://growcapitalresearch.com';
     });
 
     // TOAST NOTIFICATIONS

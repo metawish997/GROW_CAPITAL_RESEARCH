@@ -16,13 +16,13 @@ class KycService
 
     public function __construct()
     {
-        // Load Digio credentials from the DB (app_settings table) — not from .env
-        $digio = AppSetting::getGroup('digio');
+        // ponytail: single source of truth via AppSetting::getActiveDigio()
+        $digio = AppSetting::getActiveDigio();
 
-        $this->clientId     = trim($digio['client_id'] ?? '');
-        $this->clientSecret = trim($digio['client_secret'] ?? '');
-        $this->baseUrl      = rtrim(trim($digio['base_url'] ?? ''), '/');
-        $this->workflow     = trim($digio['workflow'] ?? 'kyc_with_aadhaar');
+        $this->clientId     = $digio['client_id'];
+        $this->clientSecret = $digio['client_secret'];
+        $this->baseUrl      = $digio['base_url'];
+        $this->workflow     = $digio['workflow'];
 
         // Auto-fix sandbox API URL which requires port 444
         if (str_starts_with($this->baseUrl, 'https://ext.digio.in') && !str_ends_with($this->baseUrl, ':444')) {
@@ -30,10 +30,10 @@ class KycService
         }
 
         Log::info('[KYC] KycService initialized', [
+            'mode'        => $digio['mode'],
             'base_url'    => $this->baseUrl,
             'client_id'   => $this->clientId ? substr($this->clientId, 0, 10) . '...' : 'MISSING',
             'workflow'    => $this->workflow,
-            'env'         => $digio['environment'] ?? 'unknown',
         ]);
     }
 
