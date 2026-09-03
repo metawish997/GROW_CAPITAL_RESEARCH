@@ -45,7 +45,7 @@ class AppSettingController extends Controller
             $settingsArr = $settings->toArray();
             
             // Mask sensitive fields
-            $sensitiveKeys = ['ndml_password', 'ndml_passkey', 'ndml_encryption_key', 'sftp_password'];
+            $sensitiveKeys = ['kfin_password', 'sftp_password'];
             foreach ($sensitiveKeys as $key) {
                 if (isset($settingsArr[$key]) && $settingsArr[$key] !== '') {
                     $settingsArr[$key] = '••••••••';
@@ -88,14 +88,13 @@ class AppSettingController extends Controller
 
         if ($group === 'kra') {
             $allowedKeys = [
-                'ndml_user_id', 'ndml_password', 'ndml_bp_id', 'ndml_passkey', 
-                'ndml_encryption_key', 'ndml_uat_mode', 'sftp_host', 
-                'sftp_port', 'sftp_username', 'sftp_password', 'auto_upload_on_approval'
+                'kfin_user_id', 'kfin_password', 'kfin_pos_code', 'kfin_uat_mode', 
+                'sftp_host', 'sftp_port', 'sftp_username', 'sftp_password', 'auto_upload_on_approval'
             ];
             $data = $request->only($allowedKeys);
 
             // Don't overwrite masked fields
-            $sensitiveKeys = ['ndml_password', 'ndml_passkey', 'ndml_encryption_key', 'sftp_password'];
+            $sensitiveKeys = ['kfin_password', 'sftp_password'];
             foreach ($sensitiveKeys as $key) {
                 if (isset($data[$key]) && $data[$key] === '••••••••') {
                     unset($data[$key]);
@@ -103,8 +102,8 @@ class AppSettingController extends Controller
             }
 
             // Ensure booleans are cast correctly from request
-            if (isset($data['ndml_uat_mode'])) {
-                $data['ndml_uat_mode'] = filter_var($data['ndml_uat_mode'], FILTER_VALIDATE_BOOLEAN) ? 1 : 0;
+            if (isset($data['kfin_uat_mode'])) {
+                $data['kfin_uat_mode'] = filter_var($data['kfin_uat_mode'], FILTER_VALIDATE_BOOLEAN) ? 1 : 0;
             }
             if (isset($data['auto_upload_on_approval'])) {
                 $data['auto_upload_on_approval'] = filter_var($data['auto_upload_on_approval'], FILTER_VALIDATE_BOOLEAN) ? 1 : 0;
@@ -158,8 +157,8 @@ class AppSettingController extends Controller
             if ($group === 'kra') {
                 $settings = KraSetting::first();
                 $summary[$group] = [
-                    'configured' => !empty($settings) && !empty($settings->ndml_user_id),
-                    'keys_set'   => $settings ? 11 : 0,
+                    'configured' => !empty($settings->kfin_user_id),
+                    'uat_mode'   => $settings ? $settings->kfin_uat_mode : true,
                 ];
                 continue;
             }

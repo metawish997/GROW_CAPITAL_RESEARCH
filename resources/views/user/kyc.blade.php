@@ -184,6 +184,17 @@
                     <input type="tel" id="kycMobile" name="mobile" placeholder="Aadhaar-linked mobile" maxlength="10" required />
                 </div>
             </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label>PAN Number</label>
+                    <input type="text" id="kycPan" name="pan" placeholder="e.g. ABCDE1234F" style="text-transform: uppercase;" required />
+                </div>
+                <div class="form-group">
+                    <label>Date of Birth</label>
+                    <input type="date" id="kycDob" name="dob" required />
+                </div>
+            </div>
 
             <div class="consent-box">
                 ℹ️ By proceeding, you agree to complete identity verification via <strong>Digio</strong>. Your Aadhaar data will be used only for KYC compliance and stored securely.
@@ -349,14 +360,17 @@
         }
 
         btn.disabled = true;
-        btn.classList.add('loading');
-        btn.innerHTML = '⏳ Creating KYC Request...';
+        btn.innerHTML = '<span class="spinner"></span> Checking KRA Status...';
 
         try {
-            const res  = await fetch('/api/user/kyc/initiate', {
+            const res = await fetch('/api/user/kyc/initiate', {
                 method: 'POST',
-                headers: { 'Authorization': 'Bearer ' + userToken, 'Accept': 'application/json', 'Content-Type': 'application/json' },
-                body: JSON.stringify({ mobile, name }),
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + userToken,
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({ name, mobile, pan, dob })
             });
             const data = await res.json();
 

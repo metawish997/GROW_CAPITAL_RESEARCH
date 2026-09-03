@@ -5,8 +5,10 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\KycVerification;
 use App\Services\KycService;
+use App\Services\KfinKraService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Carbon\Carbon;
 
 class KycController extends Controller
 {
@@ -66,6 +68,8 @@ class KycController extends Controller
         $request->validate([
             'mobile' => 'required|string|min:10|max:15',
             'name'   => 'nullable|string|max:100',
+            'pan'    => 'required|string|size:10',
+            'dob'    => 'required|date',
         ]);
 
         $user = $request->user();
@@ -96,6 +100,40 @@ class KycController extends Controller
         KycVerification::where('user_id', $user->id)
             ->whereIn('status', ['rejected', 'failed', 'expired', 'initiated', 'pending', 'requested'])
             ->delete();
+
+        // Check KFin KRA before initiating Digio
+        try {
+            $kraService = new KfinKraService();
+            if ($kraService->isKycValid($request->pan)) {
+                $kycDetails = $kraService->getKycDetails($request->pan, $request->dob);
+                
+                if ($kycDetails) {
+                    // Mark as approved immediately and skip Digio
+                    $kyc = KycVerification::create([
+                        'user_id'         => $user->id,
+                        'customer_name'   => $request->name,
+                        'customer_mobile' => $request->mobile,
+                        'status'          => 'approved',
+                        'document_id'     => 'KRA_' . $request->pan, // pseudo ID
+                        'digio_kyc_id'    => 'KRA_BYPASS',
+                        'transaction_id'  => 'GC_KYC_' . time() . '_' . $user->id,
+                        'kyc_completed_at'=> now(),
+                        'kyc_expires_at'  => now()->addYear(),
+                        'callback_status' => 'kra_fetched_bypass'
+                    ]);
+
+                    return response()->json([
+                        'success' => true,
+                        'kyc_status' => 'approved',
+                        'message' => 'Your KYC has been successfully retrieved from KRA and validated!',
+                        'redirect_url' => null
+                    ]);
+                }
+            }
+        } catch (\Exception $e) {
+            Log::error("KRA Check Failed during initiate: " . $e->getMessage());
+            // Proceed to Digio if KRA fails
+        }
 
         $result = $this->kycService->initiateKyc([
             'user_id' => $user->id,

@@ -414,11 +414,11 @@
                         <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line></svg>
                     </div>
                     <div class="panel-title-text">
-                        <h3>NDML KRA Configuration</h3>
-                        <p>Setup SOAP endpoints for registration/inquiry and SFTP server credentials for PDF uploads.</p>
+                        <h3>KFin KRA Configuration</h3>
+                        <p>Setup REST API endpoints for KYC Fetch/Registration and SFTP server credentials.</p>
                     </div>
                 </div>
-                <div class="info-note">ℹ️ Supports both live production and pilot UAT environment profiles for NDML KRA verification.</div>
+                <div class="info-note">ℹ️ Supports both live production and pilot UAT environment profiles for KFin KRA verification.</div>
                 
                 <!-- Connection Test Result Banner -->
                 <div id="kraTestResult" class="alert-box" style="display: none; margin-bottom: 20px;">
@@ -429,39 +429,21 @@
                 </div>
 
                 <form id="form-kra" onsubmit="saveSettings(event, 'kra')">
-                    <h4 style="font-size: 13px; font-weight:700; color:var(--text-dark); margin-bottom: 12px; text-transform:uppercase; letter-spacing:0.5px;">SOAP Webservices</h4>
+                    <h4 style="font-size: 13px; font-weight:700; color:var(--text-dark); margin-bottom: 12px; text-transform:uppercase; letter-spacing:0.5px;">REST API Webservices</h4>
                     <div class="form-grid" style="margin-bottom: 24px;">
                         <div class="form-group">
-                            <label>NDML User ID / POS Code</label>
-                            <input type="text" name="ndml_user_id" id="kra-ndml_user_id" placeholder="e.g. USER1234" />
+                            <label>KFin User ID</label>
+                            <input type="text" name="kfin_user_id" id="kra-kfin_user_id" placeholder="e.g. 01" />
                         </div>
                         <div class="form-group">
-                            <label>MI Code / Okra Code (BP ID)</label>
-                            <input type="text" name="ndml_bp_id" id="kra-ndml_bp_id" placeholder="e.g. B1465" />
-                        </div>
-                        <div class="form-group">
-                            <label>Portal Login Password</label>
-                            <div class="pw-wrap">
-                                <input type="password" name="ndml_password" id="kra-ndml_password" placeholder="••••••••" />
-                                <button type="button" class="eye-btn" onclick="togglePw('kra-ndml_password', this)" title="Show/Hide">
-                                    <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                                </button>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label>Passkey (Registration Hashing)</label>
-                            <div class="pw-wrap">
-                                <input type="password" name="ndml_passkey" id="kra-ndml_passkey" placeholder="e.g. SecretPasskey" />
-                                <button type="button" class="eye-btn" onclick="togglePw('kra-ndml_passkey', this)" title="Show/Hide">
-                                    <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                                </button>
-                            </div>
+                            <label>KFin POS Code</label>
+                            <input type="text" name="kfin_pos_code" id="kra-kfin_pos_code" placeholder="e.g. 1150001435" />
                         </div>
                         <div class="form-group full">
-                            <label>Encryption Key (Inquiry Passcode)</label>
+                            <label>KFin API Password</label>
                             <div class="pw-wrap">
-                                <input type="password" name="ndml_encryption_key" id="kra-ndml_encryption_key" placeholder="e.g. EncKey8" />
-                                <button type="button" class="eye-btn" onclick="togglePw('kra-ndml_encryption_key', this)" title="Show/Hide">
+                                <input type="password" name="kfin_password" id="kra-kfin_password" placeholder="••••••••" />
+                                <button type="button" class="eye-btn" onclick="togglePw('kra-kfin_password', this)" title="Show/Hide">
                                     <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                                 </button>
                             </div>
@@ -501,7 +483,7 @@
                     <div class="form-grid">
                         <div class="form-group">
                             <label>Environment Mode</label>
-                            <select name="ndml_uat_mode" id="kra-ndml_uat_mode">
+                            <select name="kfin_uat_mode" id="kra-kfin_uat_mode">
                                 <option value="1">UAT / Pilot Server</option>
                                 <option value="0">Production Server</option>
                             </select>

@@ -9,7 +9,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use App\Models\User;
 use App\Models\KycVerification;
-use App\Services\NdmlKraService;
+use App\Services\KfinKraService;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\File;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -87,17 +87,69 @@ class UploadKraDocumentsToSftp implements ShouldQueue
                 }
             }
  
-            // 1. Initialize NDML KRA SOAP service
-            $service = new NdmlKraService();
+            // 1. Initialize KFin KRA REST service
+            $service = new KfinKraService();
  
-            // 2. Perform live XML Registration call to NDML KRA Webservices
-            Log::info("KRA Job: Dispatching SOAP Registration request for user: " . $user->name);
-            $regResult = $service->registerKyc($user, $kyc);
- 
-            if (!$regResult['success']) {
-                Log::error("KRA Job Registration SOAP Call Failed: " . ($regResult['error'] ?? 'Unknown SOAP error'));
-            } else {
-                Log::info("KRA Job: SOAP Registration call completed successfully.");
+            // 2. Perform live REST Upload call to KFin KRA Webservices
+            Log::info("KRA Job: Dispatching REST Upload request for user: " . $user->name);
+            
+            $kycData = [
+                "APP_NO" => "APP" . time(),
+                "APP_PAN_NO" => $pan,
+                "APP_PAN_COPY" => "Y",
+                "APP_EXMT" => "N",
+                "APP_EXMT_CAT" => "",
+                "APP_EXMT_ID_PROOF" => "01",
+                "APP_NAME" => substr($user->pan_card_name ?? $user->name, 0, 100),
+                "APP_F_NAME" => substr($user->father_name ?? "Not Provided", 0, 100),
+                "APP_DOB_DT" => $user->dob ? $user->dob->format('d/m/Y') : "01/01/1990",
+                "APP_GEN" => strtoupper(substr($user->gender ?? "M", 0, 1)),
+                "APP_MAR_STATUS" => strtolower($user->marital_status ?? 'single') == 'single' ? "02" : "01",
+                "APP_NATIONALITY" => "01",
+                "APP_COMP_STATUS" => "01",
+                "APP_RES_STATUS" => "R",
+                "APP_RES_STATUS_PROOF" => "01",
+                "APP_UID_NO" => "N",
+                "APP_COR_ADD1" => substr($user->address ?? "Not Provided", 0, 255),
+                "APP_COR_CITY" => substr($user->city ?? "Not Provided", 0, 100),
+                "APP_COR_PINCD" => substr($user->pincode ?? "000000", 0, 6),
+                "APP_COR_STATE" => "027", 
+                "APP_COR_CTRY" => "101",
+                "APP_COR_ADD_PROOF" => "09", 
+                "APP_COR_ADD_REF" => "12349865",
+                "APP_COR_ADD_DT" => now()->format('d/m/Y'),
+                "APP_PER_ADD_FLAG" => "Y",
+                "APP_PER_ADD1" => substr($user->address ?? "Not Provided", 0, 255),
+                "APP_PER_CITY" => substr($user->city ?? "Not Provided", 0, 100),
+                "APP_PER_PINCD" => substr($user->pincode ?? "000000", 0, 6),
+                "APP_PER_STATE" => "027",
+                "APP_PER_CTRY" => "101",
+                "APP_PER_ADD_PROOF" => "09",
+                "APP_PER_ADD_REF" => "12349865",
+                "APP_PER_ADD_DT" => now()->format('d/m/Y'),
+                "APP_MOB_ISD" => "91",
+                "APP_MOB_NO" => substr($user->phone ?? $user->mobile, -10),
+                "APP_EMAIL" => strtolower($user->email ?? 'test@example.com'),
+                "APP_INCOME" => "01",
+                "APP_OCC" => "01",
+                "APP_POL_CONN" => "NA",
+                "APP_DOC_PROOF" => "S",
+                "APP_IPV_FLAG" => "Y",
+                "APP_IPV_DATE" => now()->format('d/m/Y'),
+                "APP_IPV_NAME" => "Digio EKYC",
+                "APP_IPV_DESG" => "System",
+                "APP_IPV_ORGAN" => "Grow Capital",
+                "APP_KYC_MODE" => "1",
+                "APP_STATUS" => "01",
+                "APP_STATUSDT" => now()->format('d/m/Y H:i:s')
+            ];
+
+            try {
+                $regResult = $service->newKycUpload($kycData);
+                Log::info("KRA Job: REST Data Upload completed successfully.", ['response' => $regResult]);
+            } catch (Exception $e) {
+                Log::error("KRA Job Registration API Call Failed: " . $e->getMessage());
+                throw $e;
             }
  
             // 3. Construct KRA Consolidated PDF containing Profile Info, digilocker Aadhaar validation, Selfie, and Signature
@@ -201,20 +253,22 @@ class UploadKraDocumentsToSftp implements ShouldQueue
             $pdf->save($pdfPath);
             Log::info("KRA Job: PDF compiled successfully at: " . $pdfPath);
  
-            // 4. Securely upload the generated PDF to KRA SFTP
-            Log::info("KRA Job: Initiating SFTP upload to NDML for user: " . $user->name);
-            $uploadResult = $service->uploadKycDocumentsToSftp($pan, $pdfPath);
- 
-            if ($uploadResult) {
-                Log::info("KRA Job SUCCESS: SOAP Registration and SFTP document upload finished for user ID: " . $this->userId);
+            // 4. Securely upload the generated PDF to KRA via REST API
+            Log::info("KRA Job: Initiating Document Upload to KFin API for user: " . $user->name);
+            
+            try {
+                $uploadResult = $service->fileUpload($pan, [$pdfPath]);
+                
+                Log::info("KRA Job SUCCESS: API Registration and Document Upload finished for user ID: " . $this->userId);
                 
                 // Mark user's KYC record as synced
                 $kyc->update([
                     'callback_status' => 'synced_to_kra',
-                    'callback_message' => 'SOAP registration call made and POI/POA PDF successfully uploaded to NDML KRA SFTP on ' . date('Y-m-d H:i:s')
+                    'callback_message' => 'API data upload and PDF successfully pushed to KFin KRA on ' . date('Y-m-d H:i:s')
                 ]);
-            } else {
-                throw new Exception("NDML SFTP upload process returned false.");
+            } catch (Exception $e) {
+                Log::error("KFin Document Upload Failed: " . $e->getMessage());
+                throw new Exception("KFin API document upload returned error: " . $e->getMessage());
             }
  
         } catch (Exception $e) {
